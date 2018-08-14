@@ -3,13 +3,7 @@
     <el-aside class="aside">
       <el-row>
         <el-col :span="6" class="asideLeft">
-                    <ul>
-            <li><a href="#"></a></li>
-            <li></li>
-            <li></li>
-            <li></li>
-            <li></li>
-          </ul>
+
           <p>企业</p>
           <p>消息</p>
           <p>日历</p>
