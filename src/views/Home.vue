@@ -1,22 +1,67 @@
 <template>
   <el-container class="container">
+    <!-- 侧边部分 -->
     <el-aside class="aside">
       <el-row>
-        <el-col :span="6" class="asideLeft">
-
-          <p>企业</p>
-          <p>消息</p>
-          <p>日历</p>
-          <p>网盘</p>
+        <!-- 侧边左部 -->
+        <el-col :span="6" class="aside-left">
+          <div class="top-area">
+            <a href="javascript:;">哈哈</a>
+          </div>
+          <div class="middle-area">
+            <ul>
+              <li>
+                <a href="javascript:;">
+                  <span class="middle-icon">
+                    <i class="iconfont icon-message"></i>
+                  </span>
+                  <span class="name">消息</span>
+                </a>
+              </li>
+              <li>
+                <a href="javascript:;">
+                  <span>
+                    <i class="iconfont icon-rili5"></i>
+                  </span>
+                  <span>日历</span>
+                </a>
+              </li>
+              <li>
+                <a href="javascript:;">
+                  <span>
+                    <i class="iconfont icon-wangpan"></i>
+                  </span>
+                  <span>网盘</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+          <div class="bottom-area">
+            <ul>
+              <li>
+                <a href="javascript:;">
+                  <span>
+                    <i class="iconfont icon-tongxunlu"></i>
+                  </span>
+                  <span>通讯录</span>
+                </a>
+              </li>
+              <li>
+                <i class="iconfont icon-icon7"></i>
+              </li>
+            </ul>
+          </div>
         </el-col>
-        <el-col :span="18" class="asideRight">
+        <el-col :span="18" class="aside-right">
           <p>网盘</p>
-          <div class="demo-input-suffix search">
-            <el-input
-              placeholder="请输入内容"
-              v-model="input23">
-              <i slot="prefix" class="el-input__icon el-icon-search"></i>
-            </el-input>
+          <div>
+            <div class="search">
+              <el-input
+                placeholder="请输入内容"
+                v-model="input23">
+                <i slot="prefix" class="el-input__icon el-icon-search"></i>
+              </el-input>
+            </div>
           </div>
         </el-col>
       </el-row>
@@ -50,17 +95,22 @@
           style="width: 100%">
           <el-table-column
             prop="date"
-            label="日期"
-            width="180">
+            label="文件名"
+            width="200">
           </el-table-column>
           <el-table-column
             prop="name"
-            label="姓名"
+            label="大小"
             width="180">
           </el-table-column>
           <el-table-column
             prop="address"
-            label="地址">
+            label="更新人">
+          </el-table-column>
+          <el-table-column
+            prop="name"
+            label="更新时间"
+            width="180">
           </el-table-column>
         </el-table>
       </el-main>
@@ -147,22 +197,6 @@
 </script>
 
 <style>
-* {
-  box-sizing: border-box;
-}
-
-html,
-body,
-.container {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  background-color: rgba(224, 221, 221, 0.61);
-}
-
 .inContainer {
   height: 100%;
 }
@@ -180,6 +214,7 @@ body {
   background-color: #fff;
 }
 
+/* 侧边部分 */
 .container .aside {
   height: 100%;
   background-color: #fff;
@@ -188,18 +223,67 @@ body {
 .container .aside .el-row {
   height: 100%;
 }
-.aside .asideLeft {
+
+/* 侧边左部 */
+.aside .aside-left {
   height: 100%;
   background-color: #409EFF;
 }
-.aside .asideRight {
+.aside-left .top-area a {
+  display: block;
+  height: 50px;
+  margin: 18px 0;
+  text-align: center;
+  color: #fff;
+}
+
+.aside-left .middle-area {
+  text-align: center;
+}
+.middle-area ul {
+  margin: 0;
+  padding: 0;
+}
+.middle-area ul>li {
+  cursor: pointer;
+}
+.middle-area ul a {
+  color: #fff;
+  display: block;
+  height: 70px;
+  /* line-height: 70px; */
+}
+.middle-area .middle-icon {
+  margin-top: 15px;
+  display: inline-block;
+  color: #fff;
+  font-size: 24px;
+  opacity: .8;
+  transition: transform 0.5s, opacity 0.5s;
+}
+.middle-area .middle-icon i {
+  font-size: 24px;
+}
+.middle-area .middle-icon .name {
+  display: none;
+  display: block;
+  height: 0;
+  overflow: hidden;
+  font-size: 12px;
+  color: #fff;
+}
+
+/* 侧边右部 */
+.aside .aside-right {
   height: 100%;
 }
-.asideRight p {
+.aside-right p {
   padding-left: 20px;
 }
-.asideRight .search {
+.aside .aside-right .search {
   width: 80%;
-  padding: 0 auto;
+  margin-left: 10px;
+  border-radius: 50%;
 }
+
 </style>
