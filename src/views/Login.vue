@@ -51,7 +51,8 @@ export default {
 
 <style>
 .login-wrap {
-  background-color: #324152;
+  /* background-color: #8bbfc9d3; */
+  background: url('/static/bj.jpg') bottom;
   height: 100%;
   display: flex;
   justify-content: center;

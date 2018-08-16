@@ -13,7 +13,7 @@
               <li>
                 <a href="javascript:;" class="aside-left-item">
                   <span class="middle-icon">
-                    <i class="iconfont icon-message"></i>
+                    <i class="iconfont icon-xiaoxi"></i>
                   </span>
                   <span class="name">消息</span>
                 </a>
@@ -86,8 +86,7 @@
             <el-button icon="el-icon-plus" @click="dialogFormVisible = true" round type="primary" size="small">新建文件夹</el-button>
             <el-dialog title="新建文件夹" :visible.sync="dialogFormVisible">
               <el-form :model="form">
-
-                  <el-input v-model="input" placeholder="输入文件夹的名称"></el-input>
+                <el-input v-model="input" placeholder="输入文件夹的名称"></el-input>
                 <el-form-item label="所在位置" :label-width="formLabelWidth">
                   <el-select v-model="form.region" placeholder="企业网盘">
                     <el-option label="企业网盘" value="shanghai"></el-option>
@@ -108,13 +107,19 @@
             </el-dialog>
           </el-col>
           <el-col :span="3">
-            <el-upload
-              class="upload-demo"
-              action="https://jsonplaceholder.typicode.com/posts/"
-              :on-change="handleChange"
-              :file-list="fileList3">
-              <el-button size="small" type="primary">点击上传</el-button>
-            </el-upload>
+          <el-upload
+            ref="upload"
+            class="upload"
+            :action="uploadUrl()"
+            :on-success="handleSuccess"
+            :limit=1
+            multiple
+            method:="post"
+            :on-preview="handlePreview"
+            accept=".jpg,.jpeg,.png,.gif,.bmp,.pdf,.JPG,.JPEG,.PBG,.GIF,.BMP,.PDF"
+            :file-list="fileList">
+            <el-button icon="el-icon-upload2" round type="primary" size="small">上传文件</el-button>
+          </el-upload>
           </el-col>
         </el-row>
       </el-header>
@@ -157,15 +162,25 @@
       return {
         // 侧边栏树形数据
         data: [{
-          label: '一级 1',
+          label: '企业网盘',
           children: [{
-            label: '二级 1-1',
+            label: '公司制度',
             children: [{
               label: '三级 1-1-1'
             }]
+          },{
+            label: '资料共享',
+            children: [{
+              label: '三级1-2-1'
+            }]
+          },{
+            label: '公司照片',
+            children: [{
+              label: '三级1-3-1'
+            }]
           }]
         }, {
-          label: '一级 2',
+          label: '个人网盘',
           children: [{
             label: '二级 2-1',
             children: [{
@@ -175,19 +190,6 @@
             label: '二级 2-2',
             children: [{
               label: '三级 2-2-1'
-            }]
-          }]
-        }, {
-          label: '一级 3',
-          children: [{
-            label: '二级 3-1',
-            children: [{
-              label: '三级 3-1-1'
-            }]
-          }, {
-            label: '二级 3-2',
-            children: [{
-              label: '三级 3-2-1'
             }]
           }]
         }],
@@ -233,13 +235,25 @@
         },
         formLabelWidth: '120px',
         // 新建文件夹的输入框数据
-        input: ''
+        input: '',
+        // 文件上传的数据
+        fileList:[]
       };
     },
     methods: {
       formatter(row, column) {
-      return row.date;
-    }
+        return row.date;
+      },
+      uploadUrl(){
+        var url = process.env.BASE_API + "url";
+        return url;
+      },
+      handleSuccess(){
+          //上传成功要处理的事
+      },
+      handlePreview(){
+          //上传前要处理的事
+      }
     }
   };
 </script>
@@ -330,7 +344,6 @@
   color: #fdfdfd;
   display: block;
   height: 70px;
-  /* line-height: 70px; */
 }
 .middle-area .middle-icon {
   margin-top: 15px;
@@ -352,28 +365,14 @@
   color: #fdfdfd;
 }
 
-/* 侧边右部 */
-.aside .aside-right {
-  height: 100%;
-}
-.aside-right p {
-  font-size: 16px;
-  padding-left: 20px;
-}
-.aside-right .search {
-  width: 80%;
-  margin: 0 auto;
-}
-.aside-right .el-input__inner {
-  border-radius: 20px;
-}
-
+/* 寇义东 */
+/* 侧边左部 */
 .aside-left-item {
   background-color: #409eff;
   transition-duration: 0.5s;
 }
+
 .middle-area ul a {
-  /* line-height: 70px; */
   height: 80px;
   padding: 10px 0;
 }
@@ -417,7 +416,6 @@
   transition-duration: 0.5s;
 }
 
-
 .bottom-area {
   text-align: center;
   margin-top: 150px;
@@ -457,8 +455,36 @@
 }
 .bottom-area .iconfont{
   font-size: 24px;
+  color: #fff;
 }
 .mar-top{
   margin-top: 10px;
 }
+
+/* 侧边右部 */
+.aside .aside-right {
+  height: 100%;
+}
+.aside-right p {
+  font-size: 16px;
+  padding-left: 20px;
+}
+
+/* 搜索框 */
+.aside-right .search {
+  width: 80%;
+  margin: 0 auto;
+}
+.aside-right .el-input__inner {
+  height: 35px;
+  line-height: 35px;
+  border-radius: 20px;
+}
+
+/* 网盘树形结构 */
+.aside-right .el-tree {
+  margin-top: 15px;
+  padding-left: 15px;
+}
+
 </style>
