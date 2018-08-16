@@ -30,20 +30,8 @@ export default {
   },
   methods: {
     // 点击按钮登录
-    async handleLogin() {
-      const res = await this.$http.post('login', this.formData);
-      const data = res.data;
-      const {meta: {status, msg}} = data;
-      if (status === 200) {
-        this.$message.success(msg);
-        // 记录token
-        const {data: {token}} = data;
-        sessionStorage.setItem('token', token);
-        // 跳转
-        this.$router.push({name: 'home'});
-      } else {
-        this.$message.error(msg);
-      }
+    handleLogin() {
+      this.$router.push({name: 'home'});
     }
   }
 };
@@ -52,7 +40,7 @@ export default {
 <style>
 .login-wrap {
   /* background-color: #8bbfc9d3; */
-  background: url('/static/bj.jpg') bottom;
+  background: url('/static/bj.jpg');
   height: 100%;
   display: flex;
   justify-content: center;
