@@ -6,7 +6,6 @@ import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
 import router from './router'
 import './assets/iconfont/iconfont.css'
-import './assets/jquery-slimscroll/jquery.slimscroll.min.js'
 import './assets/css/style.css'
 Vue.config.productionTip = false
 

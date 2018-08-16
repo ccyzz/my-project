@@ -11,7 +11,7 @@
           <div class="middle-area">
             <ul>
               <li>
-                <a href="javascript:;">
+                <a href="javascript:;" class="aside-left-item">
                   <span class="middle-icon">
                     <i class="iconfont icon-message"></i>
                   </span>
@@ -19,19 +19,19 @@
                 </a>
               </li>
               <li>
-                <a href="javascript:;">
-                  <span>
+                <a href="javascript:;" class="aside-left-item">
+                  <span class="middle-icon">
                     <i class="iconfont icon-rili5"></i>
                   </span>
-                  <span>日历</span>
+                  <span class="name">日历</span>
                 </a>
               </li>
               <li>
-                <a href="javascript:;">
-                  <span>
-                    <i class="iconfont icon-wangpan"></i>
+                <a href="javascript:;" class="aside-left-item">
+                  <span class="middle-icon font-s">
+                    <i class="iconfont icon-wangpan" style="font-size: 18px;"></i>
                   </span>
-                  <span>网盘</span>
+                  <span class="name">网盘</span>
                 </a>
               </li>
             </ul>
@@ -39,14 +39,14 @@
           <div class="bottom-area">
             <ul>
               <li>
-                <a href="javascript:;">
-                  <span>
+                <a href="javascript:;" class="aside-left-item">
+                  <span class="bottom-icon">
                     <i class="iconfont icon-tongxunlu"></i>
                   </span>
-                  <span>通讯录</span>
+                  <span class="name">通讯录</span>
                 </a>
               </li>
-              <li>
+              <li class="mar-top">
                 <i class="iconfont icon-icon7"></i>
               </li>
             </ul>
@@ -55,6 +55,7 @@
         <el-col :span="18" class="aside-right">
           <p>网盘</p>
           <div>
+            <!-- 搜索框 -->
             <div class="search">
               <el-input
                 placeholder="请输入内容"
@@ -62,6 +63,12 @@
                 <i slot="prefix" class="el-input__icon el-icon-search"></i>
               </el-input>
             </div>
+            <!-- tree -->
+            <el-tree
+            :data="data"
+            :props="defaultProps"
+            @node-click="handleNodeClick">
+            </el-tree>
           </div>
         </el-col>
       </el-row>
@@ -69,14 +76,36 @@
     <el-container class="inContainer">
       <el-header class="header">
         <el-row>
-          <el-col :span="18">
+          <el-col :span="18" class="header-left">
             <el-breadcrumb separator-class="el-icon-arrow-right">
               <el-breadcrumb-item :to="{ path: '/' }">企业网盘</el-breadcrumb-item>
               <el-breadcrumb-item>公司照片</el-breadcrumb-item>
             </el-breadcrumb>
           </el-col>
           <el-col :span="3">
-            <el-button type="primary">主要按钮</el-button>
+            <el-button icon="el-icon-plus" @click="dialogFormVisible = true" round type="primary" size="small">新建文件夹</el-button>
+            <el-dialog title="新建文件夹" :visible.sync="dialogFormVisible">
+              <el-form :model="form">
+
+                  <el-input v-model="input" placeholder="输入文件夹的名称"></el-input>
+                <el-form-item label="所在位置" :label-width="formLabelWidth">
+                  <el-select v-model="form.region" placeholder="企业网盘">
+                    <el-option label="企业网盘" value="shanghai"></el-option>
+                    <el-option label="个人网盘" value="beijing"></el-option>
+                  </el-select>
+                </el-form-item>
+                <el-form-item label="可见范围" :label-width="formLabelWidth">
+                  <el-select v-model="form.region" placeholder="公开:企业所有成员都可以看见此文件夹">
+                    <el-option label="公开:企业所有成员都可以看见此文件夹" value="shanghai"></el-option>
+                    <el-option label="私有:只有加入的成员才能看见此文件夹" value="beijing"></el-option>
+                  </el-select>
+                </el-form-item>
+              </el-form>
+              <div slot="footer" class="dialog-footer">
+                <el-button round @click="dialogFormVisible = false">取 消</el-button>
+                <el-button round type="primary" @click="dialogFormVisible = false">确 定</el-button>
+              </div>
+            </el-dialog>
           </el-col>
           <el-col :span="3">
             <el-upload
@@ -92,11 +121,14 @@
       <el-main class="main">
         <el-table
           :data="tableData"
-          style="width: 100%">
+          style="width: 100%"
+          :default-sort = "{prop: 'date', order: 'descending'}"
+          >
           <el-table-column
             prop="date"
             label="文件名"
-            width="200">
+            width="300"
+            :formatter="formatter">
           </el-table-column>
           <el-table-column
             prop="name"
@@ -105,12 +137,13 @@
           </el-table-column>
           <el-table-column
             prop="address"
-            label="更新人">
+            label="更新人"
+            width="180">
           </el-table-column>
           <el-table-column
-            prop="name"
+            prop="date"
             label="更新时间"
-            width="180">
+            sortable>
           </el-table-column>
         </el-table>
       </el-main>
@@ -122,6 +155,7 @@
  export default {
     data() {
       return {
+        // 侧边栏树形数据
         data: [{
           label: '一级 1',
           children: [{
@@ -162,22 +196,22 @@
           label: 'label'
         },
         input23: '',
-        tableData: [{
-            date: '2016-05-02',
-            name: '王小虎',
-            address: '上海市普陀区金沙江路 1518 弄'
-          }, {
-            date: '2016-05-04',
-            name: '王小虎',
-            address: '上海市普陀区金沙江路 1517 弄'
-          }, {
-            date: '2016-05-01',
-            name: '王小虎',
-            address: '上海市普陀区金沙江路 1519 弄'
-          }, {
-            date: '2016-05-03',
-            name: '王小虎',
-            address: '上海市普陀区金沙江路 1516 弄'
+       tableData: [{
+          date: '2016-05-02',
+          name: '王小虎',
+          address: '上海市'
+        }, {
+          date: '2016-05-04',
+          name: '王小虎',
+          address: '上海市'
+        }, {
+          date: '2016-05-01',
+          name: '王小虎',
+          address: '上海市普'
+        }, {
+          date: '2016-05-03',
+          name: '王小虎',
+          address: '上海市普'
         }],
         fileList3: [{
           name: 'food.jpeg',
@@ -185,13 +219,27 @@
         }, {
           name: 'food2.jpeg',
           url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100'
-        }]
+        }],
+        dialogFormVisible: false,
+        form: {
+          name: '',
+          region: '',
+          date1: '',
+          date2: '',
+          delivery: false,
+          type: [],
+          resource: '',
+          desc: ''
+        },
+        formLabelWidth: '120px',
+        // 新建文件夹的输入框数据
+        input: ''
       };
     },
     methods: {
-      handleNodeClick(data) {
-        console.log(data);
-      }
+      formatter(row, column) {
+      return row.date;
+    }
     }
   };
 </script>
@@ -201,23 +249,54 @@
   height: 100%;
 }
 
+/* 头部 */
 .header {
   line-height: 60px;
   margin-left: 1px;
+  background-color: #fdfdfd;
+}
+.header .el-row {
+  line-height: 60px;
+}
+.header .el-col {
+  height: 60px;
+  line-height: 60px;
+}
+.header-left .el-breadcrumb {
+  height: 60px;
+  line-height: 60px;
+}
+.header .add {
+  position: absolute;
+  box-shadow: 0 0 24px rgba(0,0,0,.18);
+  display: none;
+  z-index: 10;
+  right: 110px;
+  top: 55px;
+  height: 100px;
+  width: 200px;
   background-color: #fff;
 }
 
+.header .add li {
+  height: 50px;
+  line-height: 50px;
+  padding-left: 20px;
+  cursor: pointer;
+}
+
+/* 主列表部分 */
 .main {
   height: 100%;
   margin: 15px;
   overflow: hidden;
-  background-color: #fff;
+  background-color: #fdfdfd;
 }
 
 /* 侧边部分 */
 .container .aside {
   height: 100%;
-  background-color: #fff;
+  background-color: #fdfdfd;
   overflow: hidden;
 }
 .container .aside .el-row {
@@ -234,7 +313,7 @@
   height: 50px;
   margin: 18px 0;
   text-align: center;
-  color: #fff;
+  color: #fdfdfd;
 }
 
 .aside-left .middle-area {
@@ -248,7 +327,7 @@
   cursor: pointer;
 }
 .middle-area ul a {
-  color: #fff;
+  color: #fdfdfd;
   display: block;
   height: 70px;
   /* line-height: 70px; */
@@ -256,7 +335,7 @@
 .middle-area .middle-icon {
   margin-top: 15px;
   display: inline-block;
-  color: #fff;
+  color: #fdfdfd;
   font-size: 24px;
   opacity: .8;
   transition: transform 0.5s, opacity 0.5s;
@@ -270,7 +349,7 @@
   height: 0;
   overflow: hidden;
   font-size: 12px;
-  color: #fff;
+  color: #fdfdfd;
 }
 
 /* 侧边右部 */
@@ -278,12 +357,108 @@
   height: 100%;
 }
 .aside-right p {
+  font-size: 16px;
   padding-left: 20px;
 }
-.aside .aside-right .search {
+.aside-right .search {
   width: 80%;
-  margin-left: 10px;
-  border-radius: 50%;
+  margin: 0 auto;
+}
+.aside-right .el-input__inner {
+  border-radius: 20px;
 }
 
+.aside-left-item {
+  background-color: #409eff;
+  transition-duration: 0.5s;
+}
+.middle-area ul a {
+  /* line-height: 70px; */
+  height: 80px;
+  padding: 10px 0;
+}
+.middle-area .name {
+  position: relative;
+  top: 20px;
+  opacity:0;
+}
+.middle-area .middle-icon {
+  margin-top: 0;
+  position: relative;
+  top: 20px;
+  display: block;
+  font-size: 0;
+  transition-property: top;
+  transition-duration: 0.5s;
+}
+ .aside-left-item:hover {
+  transition-duration: .5s;
+  background-color: #2f84dc;
+}
+.aside-left-item:hover .middle-icon{
+  top: 5px;
+  transition-property: top;
+  transition-duration: 0.5s;
+}
+.aside-left-item:hover .name {
+  opacity: 1;
+  position: relative;
+  top: 10px;
+  transition-property: top;
+  transition-duration: .5s;
+}
+.bottom-area .bottom-icon {
+  margin-top: 0;
+  position: relative;
+  top: 20px;
+  display: block;
+  font-size: 0;
+  transition-property: top;
+  transition-duration: 0.5s;
+}
+
+
+.bottom-area {
+  text-align: center;
+  margin-top: 150px;
+}
+.bottom-area ul {
+  margin: 0;
+  padding: 0;
+}
+.bottom-area ul > li {
+  cursor: pointer;
+}
+.bottom-area ul a {
+  color: #fff;
+  display: block;
+  height: 70px;
+}
+.bottom-area .name{
+  opacity: 0;
+  display: block;
+  position: relative;
+  top: 20px;
+  transition-property: top;
+  transition-duration: .5s;
+}
+.aside-left-item:hover .name {
+  opacity: 1;
+  top: 10px;
+  transition-property: top;
+  transition-duration: .5s;
+}
+.bottom-area .bottom-icon{
+  position: relative;
+  top: 20px;
+}
+.aside-left-item:hover .bottom-icon{
+  top: 10px;
+}
+.bottom-area .iconfont{
+  font-size: 24px;
+}
+.mar-top{
+  margin-top: 10px;
+}
 </style>
