@@ -65,11 +65,12 @@
             </div>
             <!-- tree -->
             <el-tree
-            :data="data"
-            :props="defaultProps"
-            @node-click="handleNodeClick"
-            node-key="id"
-            >
+              :data="treeData"
+              @node-click="handleNodeClick()"
+              :props="defaultProps"
+              node-key="id"
+              ref="tree"
+              >
             </el-tree>
           </div>
         </el-col>
@@ -80,7 +81,7 @@
         <el-row>
           <el-col :span="18" class="header-left">
             <el-breadcrumb separator-class="el-icon-arrow-right">
-              <el-breadcrumb-item :to="{ path: '/' }">企业网盘</el-breadcrumb-item>
+              <el-breadcrumb-item :to="{ path: '/home' }">企业网盘</el-breadcrumb-item>
               <el-breadcrumb-item>公司照片</el-breadcrumb-item>
             </el-breadcrumb>
           </el-col>
@@ -129,7 +130,7 @@
         <el-table
           :data="tableData"
           style="width: 100%"
-          height="200"
+          height="600"
           :default-sort = "{prop: 'date', order: 'descending'}"
           >
           <el-table-column
@@ -164,42 +165,13 @@
     data() {
       return {
         // 侧边栏树形数据
-        data: [{
-          label: '企业网盘',
-          children: [{
-            label: '公司制度',
-            children: [{
-              label: '三级 1-1-1'
-            }]
-          },{
-            label: '资料共享',
-            children: [{
-              label: '三级1-2-1'
-            }]
-          },{
-            label: '公司照片',
-            children: [{
-              label: '三级1-3-1'
-            }]
-          }]
-        }, {
-          label: '个人网盘',
-          children: [{
-            label: '二级 2-1',
-            children: [{
-              label: '三级 2-1-1'
-            }]
-          }, {
-            label: '二级 2-2',
-            children: [{
-              label: '三级 2-2-1'
-            }]
-          }]
-        }],
+        treeData: [],
+        id: 'id',
         defaultProps: {
-          children: 'children',
-          label: 'label'
+          children: 'directory',
+          label: 'fdName'
         },
+        checkedList: [],
         input23: '',
        tableData: [{
           date: '2016-05-02',
@@ -244,7 +216,7 @@
       };
     },
     created() {
-
+      this.loadData();
     },
     methods: {
       formatter(row, column) {
@@ -260,16 +232,21 @@
       handlePreview(){
           //上传前要处理的事
       },
-      // mydata() {
-      //   this.$ajax.get('http://192.168.1.18:8081/support.platform/catalog/fdTree.act?fdId=08081744359890000')
-      //     .then(function(res) {
-      //       console.log(res)
-      //     })
-      //     .catch(function(error) {
-      //       console.log(error)
-      //     })
-      // }
-    }
+
+      // 展示目录
+      async loadData() {
+        const res = await this.$ajax.get('/api/support.platform/catalog/fdTree.act?fdId=0');
+        const data = res.data.value;
+        this.treeData = data;
+        console.log(data)
+      },
+
+      // 当点击树节点的时候在右表中显示数据
+      async handleNodeClick(treeData) {
+      //   const res = await this.$ajax.get(`/api/support.platform/catalog/getChildFiles.act/${pId}`)
+        console.log(treeData)
+      }
+    },
  }
 </script>
 
