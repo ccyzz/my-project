@@ -86,26 +86,33 @@
             </el-breadcrumb>
           </el-col>
           <el-col :span="3">
-            <el-button icon="el-icon-plus" @click="dialogFormVisible = true" round type="primary" size="small">新建文件夹</el-button>
-            <el-dialog title="新建文件夹" :visible.sync="dialogFormVisible">
-              <el-form :model="form">
-                <el-input v-model="input" placeholder="输入文件夹的名称"></el-input>
-                <el-form-item label="所在位置" :label-width="formLabelWidth">
-                  <el-select v-model="form.region" placeholder="企业网盘">
-                    <el-option label="企业网盘" value="shanghai"></el-option>
-                    <el-option label="个人网盘" value="beijing"></el-option>
+            <el-button icon="el-icon-plus" @click="dialogAddVisible = true" round type="primary" size="small">新建文件夹</el-button>
+            <el-dialog title="新建文件夹" :visible.sync="dialogAddVisible">
+              <el-form :model="formData">
+                <el-input v-model="formData.fdName" class="addinput" placeholder="输入文件夹的名称"></el-input>
+                <el-form-item class="place" label="所在位置" :label-width="formLabelWidth">
+                  <el-select v-model="treeData.fdName" placeholder="AA">
+                    <el-tree
+                      :data="treeData"
+                      @node-click="handleNodeClick()"
+                      :props="defaultProps"
+                      node-key="id"
+                      ref="tree"
+                      >
+                    </el-tree>
+                    <el-option :label="treeData.fdName" value=""></el-option>
                   </el-select>
                 </el-form-item>
                 <el-form-item label="可见范围" :label-width="formLabelWidth">
-                  <el-select v-model="form.region" placeholder="公开:企业所有成员都可以看见此文件夹">
-                    <el-option label="公开:企业所有成员都可以看见此文件夹" value="shanghai"></el-option>
-                    <el-option label="私有:只有加入的成员才能看见此文件夹" value="beijing"></el-option>
+                  <el-select placeholder="公开:企业所有成员都可以看见此文件夹">
+                    <el-option label="公开:企业所有成员都可以看见此文件夹" value=""></el-option>
+                    <el-option label="私有:只有加入的成员才能看见此文件夹" value=""></el-option>
                   </el-select>
                 </el-form-item>
               </el-form>
               <div slot="footer" class="dialog-footer">
-                <el-button round @click="dialogFormVisible = false">取 消</el-button>
-                <el-button round type="primary" @click="dialogFormVisible = false">确 定</el-button>
+                <el-button round @click="dialogAddVisible = false">取 消</el-button>
+                <el-button round type="primary" @click="handleAdd">确 定</el-button>
               </div>
             </el-dialog>
           </el-col>
@@ -171,9 +178,8 @@
           children: 'directory',
           label: 'fdName'
         },
-        checkedList: [],
         input23: '',
-       tableData: [{
+        tableData: [{
           date: '2016-05-02',
           name: '王小虎',
           address: '上海市'
@@ -197,20 +203,25 @@
           name: 'food2.jpeg',
           url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100'
         }],
-        dialogFormVisible: false,
-        form: {
-          name: '',
-          region: '',
-          date1: '',
-          date2: '',
-          delivery: false,
-          type: [],
-          resource: '',
-          desc: ''
-        },
-        formLabelWidth: '120px',
+        // 新建文件夹对话框
+        dialogAddVisible: false,
         // 新建文件夹的输入框数据
-        input: '',
+        formData: {
+          fdName: ''
+        },
+        value: '',
+        // input: '',
+        // form: {
+        //   name: '',
+        //   region: '',
+        //   date1: '',
+        //   date2: '',
+        //   delivery: false,
+        //   type: [],
+        //   resource: '',
+        //   desc: ''
+        // },
+        formLabelWidth: '120px',
         // 文件上传的数据
         fileList:[]
       };
@@ -242,9 +253,14 @@
       },
 
       // 当点击树节点的时候在右表中显示数据
-      async handleNodeClick(treeData) {
-      //   const res = await this.$ajax.get(`/api/support.platform/catalog/getChildFiles.act/${pId}`)
-        console.log(treeData)
+      // async handleNodeClick(data) {
+      //   const res = await this.$ajax.get(`/api/support.platform/catalog/getChildFiles.act/${fdId}`)
+      //   console.log(data)
+      // }
+
+      // 点击新建文件夹中的确定按钮
+      handleAdd() {
+        // const res = await this.$ajax.post('', this.formData);
       }
     },
  }
@@ -272,23 +288,22 @@
   height: 60px;
   line-height: 60px;
 }
-.header .add {
-  position: absolute;
-  box-shadow: 0 0 24px rgba(0,0,0,.18);
-  display: none;
-  z-index: 10;
-  right: 110px;
-  top: 55px;
-  height: 100px;
-  width: 200px;
-  background-color: #fff;
-}
 
-.header .add li {
-  height: 50px;
-  line-height: 50px;
-  padding-left: 20px;
-  cursor: pointer;
+/* 新建文件夹 */
+.header .addinput {
+  width: 80%;
+}
+.header .el-dialog__header {
+  padding: 20px 20px 0px;
+}
+.header .el-dialog__body {
+  padding: 0 20px;
+}
+.header .place {
+  margin-top: 10px;
+}
+.header .el-input--suffix {
+  width: 100%;
 }
 
 /* 主列表部分 */
