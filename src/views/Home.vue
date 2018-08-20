@@ -235,7 +235,7 @@
 
       // 展示目录
       async loadData() {
-        const res = await this.$ajax.get('/api/support.platform/catalog/fdTree.act?fdId=0');
+        const res = await this.$ajax.get('/api/support.platform/catalog/fdtree.act?fdId=0');
         const data = res.data.value;
         this.treeData = data;
         console.log(data)
