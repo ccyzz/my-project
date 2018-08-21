@@ -89,7 +89,7 @@
             <el-button icon="el-icon-plus" @click="dialogAddVisible = true" round type="primary" size="small">新建文件夹</el-button>
             <el-dialog title="新建文件夹" :visible.sync="dialogAddVisible">
               <el-form :model="formData">
-                <el-input v-model="formData.fdName" class="addinput" placeholder="输入文件夹的名称"></el-input>
+                <el-input v-model="formData.dirName" class="addinput" placeholder="输入文件夹的名称"></el-input>
                 <el-form-item class="place" label="所在位置" :label-width="formLabelWidth">
                   <treeselect :normalizer="normalizer" v-model="value" :multiple="false" :options="options" />
                 </el-form-item>
@@ -160,8 +160,8 @@
 </template>
 
 <script>
-import Treeselect from '@riophae/vue-treeselect'
-import '@riophae/vue-treeselect/dist/vue-treeselect.css'
+import Treeselect from '@riophae/vue-treeselect';
+import '@riophae/vue-treeselect/dist/vue-treeselect.css';
 export default {
   components: { Treeselect },
   data() {
@@ -202,9 +202,9 @@ export default {
       dialogAddVisible: false,
       // 新建文件夹的输入框数据
       formData: {
-        fdName: ''
+        dirName: ''
       },
-      value: '',
+      // value: '',
       options:[],
       normalizer(node) {
       return {
@@ -272,17 +272,31 @@ export default {
       const res = await this.$ajax.get('/api/support.platform/catalog/fdtree.act?fdId=0');
       const data = res.data.value;
       this.treeData = data;
+      console.log(data)
     },
     async loadtreeData() {
       const res = await this.$ajax.get('/api/support.platform/catalog/getfdtree.act?fdId=0');
       const data = res.data.value;
       this.options = data;
+      console.log(data)
     },
 
     // 点击新建文件夹中的确定按钮
     async handleAdd() {
-      const res = await this.$ajax.post('/api/support.platform/catalog/addfd.act', this.formData);
-      const data = res.data;
+      const json = {"dirName": this.formData.dirName,"pid": this.value};
+      const jsonStr = JSON.stringify(json);
+      const res = await this.$ajax.post('/api/support.platform/catalog/addfd.act', jsonStr);
+      // this.$ajax({
+      //   url:'/api/support.platform/catalog/addfd.act',
+			// 	method: 'post',
+      //   data:  {
+      //     dirName: this.formData.dirName,
+      //     pid: this.value
+      //   },
+      //   headers:{
+			// 			'Content-Type':'text/plain;charset=UTF-8'
+			// 		}
+      // });
     }
   },
  }
