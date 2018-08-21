@@ -91,17 +91,7 @@
               <el-form :model="formData">
                 <el-input v-model="formData.fdName" class="addinput" placeholder="输入文件夹的名称"></el-input>
                 <el-form-item class="place" label="所在位置" :label-width="formLabelWidth">
-                  <el-select v-model="treeData.fdName" placeholder="AA">
-                    <el-tree
-                      :data="treeData"
-                      @node-click="handleNodeClick()"
-                      :props="defaultProps"
-                      node-key="id"
-                      ref="tree"
-                      >
-                    </el-tree>
-                    <el-option :label="treeData.fdName" value=""></el-option>
-                  </el-select>
+                  <treeselect :normalizer="normalizer" v-model="value" :multiple="false" :options="options" />
                 </el-form-item>
                 <el-form-item label="可见范围" :label-width="formLabelWidth">
                   <el-select placeholder="公开:企业所有成员都可以看见此文件夹">
@@ -118,17 +108,19 @@
           </el-col>
           <el-col :span="3">
           <el-upload
-            ref="upload"
-            class="upload"
-            :action="uploadUrl()"
-            :on-success="handleSuccess"
-            :limit=1
-            multiple
-            method:="post"
+            class="upload-demo"
+            action="https://jsonplaceholder.typicode.com/posts/"
             :on-preview="handlePreview"
+            :on-remove="handleRemove"
+            :before-remove="beforeRemove"
+            :before-upload="uploadFile"
+            multiple
+            name="file"
             accept=".jpg,.jpeg,.png,.gif,.bmp,.pdf,.JPG,.JPEG,.PBG,.GIF,.BMP,.PDF"
+            :on-exceed="handleExceed"
             :file-list="fileList">
             <el-button icon="el-icon-upload2" round type="primary" size="small">上传文件</el-button>
+            <!-- <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div> -->
           </el-upload>
           </el-col>
         </el-row>
@@ -168,101 +160,131 @@
 </template>
 
 <script>
- export default {
-    data() {
+import Treeselect from '@riophae/vue-treeselect'
+import '@riophae/vue-treeselect/dist/vue-treeselect.css'
+export default {
+  components: { Treeselect },
+  data() {
+    return {
+      // 侧边栏树形数据
+      treeData: [],
+      id: 'id',
+      defaultProps: {
+        children: 'directory',
+        label: 'fdName'
+      },
+      input23: '',
+      tableData: [{
+        date: '2016-05-02',
+        name: '王小虎',
+        address: '上海市'
+      }, {
+        date: '2016-05-04',
+        name: '王小虎',
+        address: '上海市'
+      }, {
+        date: '2016-05-01',
+        name: '王小虎',
+        address: '上海市普'
+      }, {
+        date: '2016-05-03',
+        name: '王小虎',
+        address: '上海市普'
+      }],
+      fileList3: [{
+        name: 'food.jpeg',
+        url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100'
+      }, {
+        name: 'food2.jpeg',
+        url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100'
+      }],
+      // 新建文件夹对话框
+      dialogAddVisible: false,
+      // 新建文件夹的输入框数据
+      formData: {
+        fdName: ''
+      },
+      value: '',
+      options:[],
+      normalizer(node) {
       return {
-        // 侧边栏树形数据
-        treeData: [],
-        id: 'id',
-        defaultProps: {
-          children: 'directory',
-          label: 'fdName'
-        },
-        input23: '',
-        tableData: [{
-          date: '2016-05-02',
-          name: '王小虎',
-          address: '上海市'
-        }, {
-          date: '2016-05-04',
-          name: '王小虎',
-          address: '上海市'
-        }, {
-          date: '2016-05-01',
-          name: '王小虎',
-          address: '上海市普'
-        }, {
-          date: '2016-05-03',
-          name: '王小虎',
-          address: '上海市普'
-        }],
-        fileList3: [{
-          name: 'food.jpeg',
-          url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100'
-        }, {
-          name: 'food2.jpeg',
-          url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100'
-        }],
-        // 新建文件夹对话框
-        dialogAddVisible: false,
-        // 新建文件夹的输入框数据
-        formData: {
-          fdName: ''
-        },
-        value: '',
-        // input: '',
-        // form: {
-        //   name: '',
-        //   region: '',
-        //   date1: '',
-        //   date2: '',
-        //   delivery: false,
-        //   type: [],
-        //   resource: '',
-        //   desc: ''
-        // },
-        formLabelWidth: '120px',
-        // 文件上传的数据
-        fileList:[]
-      };
-    },
-    created() {
-      this.loadData();
-    },
-    methods: {
-      formatter(row, column) {
-        return row.date;
-      },
-      uploadUrl(){
-        var url = process.env.BASE_API + "url";
-        return url;
-      },
-      handleSuccess(){
-          //上传成功要处理的事
-      },
-      handlePreview(){
-          //上传前要处理的事
-      },
-
-      // 展示目录
-      async loadData() {
-        const res = await this.$ajax.get('/api/support.platform/catalog/fdtree.act?fdId=0');
-        const data = res.data.value;
-        this.treeData = data;
-        console.log(data)
-      },
-
-      // 当点击树节点的时候在右表中显示数据
-      // async handleNodeClick(data) {
-      //   const res = await this.$ajax.get(`/api/support.platform/catalog/getChildFiles.act/${fdId}`)
-      //   console.log(data)
-      // }
-
-      // 点击新建文件夹中的确定按钮
-      handleAdd() {
-        // const res = await this.$ajax.post('', this.formData);
+        id: node.id,
+        label: node.name,
+        children: node.childrens,
       }
     },
+      // input: '',
+      // form: {
+      //   name: '',
+      //   region: '',
+      //   date1: '',
+      //   date2: '',
+      //   delivery: false,
+      //   type: [],
+      //   resource: '',
+      //   desc: ''
+      // },
+      formLabelWidth: '120px',
+      // 文件上传的数据
+      fileList:[]
+    };
+  },
+  created() {
+    this.loadData();
+    this.loadtreeData();
+  },
+  methods: {
+    formatter(row, column) {
+      return row.date;
+    },
+    // 上传文件
+    async uploadFile(file) {
+      var formData=new FormData()
+      formData.append('file',file)
+      var file = formData
+      const res = await this.$ajax.post('/api/support.platform/catalog/addfile.act', file)
+    },
+    uploadUrl(){
+      var url = process.env.BASE_API + "url";
+      return url;
+    },
+    handleRemove(file, fileList) {
+      console.log(file, fileList);
+    },
+    handlePreview(file) {
+      console.log(file);
+    },
+    handleExceed(files, fileList) {
+      this.$message.warning(`当前限制选择 3 个文件，本次选择了 ${files.length} 个文件，共选择了 ${files.length + fileList.length} 个文件`);
+    },
+    beforeRemove(file, fileList) {
+      return this.$confirm(`确定移除 ${ file.name }？`)
+    },
+    handleSuccess(){
+        //上传成功要处理的事
+    },
+    handlePreview(){
+        //上传前要处理的事
+    },
+
+    // 展示目录
+    async loadData() {
+      const res = await this.$ajax.get('/api/support.platform/catalog/fdtree.act?fdId=0');
+      const data = res.data.value;
+      this.treeData = data;
+    },
+    async loadtreeData() {
+      const res = await this.$ajax.get('/api/support.platform/catalog/getfdtree.act?fdId=0');
+      const data = res.data.value;
+      this.options = data;
+    },
+
+    // 点击新建文件夹中的确定按钮
+    async handleAdd() {
+      const res = await this.$ajax.post('/api/support.platform/catalog/addfd.act', this.formData);
+      const data = res.data;
+    }
+  },
  }
 </script>
 
