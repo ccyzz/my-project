@@ -1,81 +1,7 @@
 <template>
   <el-container class="container">
     <!-- 侧边部分 -->
-    <el-aside class="aside">
-      <el-row>
-        <!-- 侧边左部 -->
-        <el-col :span="6" class="aside-left">
-          <div class="top-area">
-            <a href="javascript:;">哈哈</a>
-          </div>
-          <div class="middle-area">
-            <ul>
-              <li>
-                <a href="javascript:;" class="aside-left-item">
-                  <span class="middle-icon">
-                    <i class="iconfont icon-xiaoxi"></i>
-                  </span>
-                  <span class="name">消息</span>
-                </a>
-              </li>
-              <li>
-                <a href="javascript:;" class="aside-left-item">
-                  <span class="middle-icon">
-                    <i class="iconfont icon-rili5"></i>
-                  </span>
-                  <span class="name">日历</span>
-                </a>
-              </li>
-              <li>
-                <a href="javascript:;" class="aside-left-item">
-                  <span class="middle-icon font-s">
-                    <i class="iconfont icon-wangpan" style="font-size: 18px;"></i>
-                  </span>
-                  <span class="name">网盘</span>
-                </a>
-              </li>
-            </ul>
-          </div>
-          <div class="bottom-area">
-            <ul>
-              <li>
-                <a href="javascript:;" class="aside-left-item">
-                  <span class="bottom-icon">
-                    <i class="iconfont icon-tongxunlu"></i>
-                  </span>
-                  <span class="name">通讯录</span>
-                </a>
-              </li>
-              <li class="mar-top">
-                <i class="iconfont icon-icon7"></i>
-              </li>
-            </ul>
-          </div>
-        </el-col>
-        <el-col :span="18" class="aside-right">
-          <p>网盘</p>
-          <div>
-            <!-- 搜索框 -->
-            <div class="search">
-              <el-input
-                placeholder="请输入内容"
-                v-model="input23">
-                <i slot="prefix" class="el-input__icon el-icon-search"></i>
-              </el-input>
-            </div>
-            <!-- tree -->
-            <el-tree
-              :data="treeData"
-              @node-click="handleNodeClick()"
-              :props="defaultProps"
-              node-key="id"
-              ref="tree"
-              >
-            </el-tree>
-          </div>
-        </el-col>
-      </el-row>
-    </el-aside>
+    <left-aside @listenToChildEvent="showMsgFromChild"></left-aside>
     <el-container class="inContainer">
       <el-header class="header">
         <el-row>
@@ -107,92 +33,98 @@
             </el-dialog>
           </el-col>
           <el-col :span="3">
-          <el-upload
-            class="upload-demo"
-            action="https://jsonplaceholder.typicode.com/posts/"
-            :on-preview="handlePreview"
-            :on-remove="handleRemove"
-            :before-remove="beforeRemove"
-            :before-upload="uploadFile"
-            multiple
-            name="file"
-            accept=".jpg,.jpeg,.png,.gif,.bmp,.pdf,.JPG,.JPEG,.PBG,.GIF,.BMP,.PDF"
-            :on-exceed="handleExceed"
-            :file-list="fileList">
-            <el-button icon="el-icon-upload2" round type="primary" size="small">上传文件</el-button>
-            <!-- <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div> -->
-          </el-upload>
+            <el-upload
+              class='ensure ensureButt'
+              :action="importFileUrl"
+              :data="upLoadData"
+              name="importfile"
+              :onError="uploadError"
+              :onSuccess="uploadSuccess"
+              >
+              <el-button icon="el-icon-upload2" round type="primary" size="small">上传文件</el-button>
+            </el-upload>
           </el-col>
         </el-row>
       </el-header>
       <el-main class="main">
-        <el-table
-          :data="tableData"
-          style="width: 100%"
-          height="600"
-          :default-sort = "{prop: 'date', order: 'descending'}"
-          >
-          <el-table-column
-            prop="date"
-            label="文件名"
-            width="300"
-            :formatter="formatter">
-          </el-table-column>
-          <el-table-column
-            prop="name"
-            label="大小"
-            width="180">
-          </el-table-column>
-          <el-table-column
-            prop="address"
-            label="更新人"
-            width="180">
-          </el-table-column>
-          <el-table-column
-            prop="date"
-            label="更新时间"
-            sortable>
-          </el-table-column>
-        </el-table>
+        <template>
+          <el-table
+            :data="tableData"
+            style="width: 100%">
+            <el-table-column
+              prop="fileName"
+              label="文件名"
+              width="180">
+            </el-table-column>
+            <el-table-column
+              prop="fileSize"
+              label="大小"
+              width="180">
+            </el-table-column>
+            <el-table-column
+              prop="updateBy"
+              label="更新人">
+            </el-table-column>
+            <el-table-column
+              prop="updateDate"
+              label="更新时间"
+              sortable
+              >
+            </el-table-column>
+            <el-table-column label="操作">
+              <template slot-scope="props">
+                <a :href="'http://192.168.1.20:8081/support.platform/file/downloadFile.act?fileId=' + props.row.id"><i class="iconfont icon-xiazai3" @click="downloadFile(props.row.id)"></i></a>
+                <i class="el-icon-more" @click="moreClick(props.row)"></i>
+              </template>
+            </el-table-column>
+          </el-table>
+        </template>
+        <!-- 弹窗 -->
+        <div v-if="isMessage" @click="closeBox()" class="messageBox">
+          <div id="messageBox">
+            <ul>
+                <li><a href="javascript:;">新建文件夹</a></li>
+                <li><a href="javascript:;">移动</a></li>
+                <li><a href="javascript:;">复制</a></li>
+                <li><a href="javascript:;">下载</a></li>
+                <li><a href="javascript:;">重命名</a></li>
+                <li><a href="javascript:;" @click="handleDel(itemId)">删除</a></li>
+            </ul>
+          </div>
+        </div>
       </el-main>
     </el-container>
   </el-container>
 </template>
 
 <script>
+import leftAside from '../components/aside';
 import Treeselect from '@riophae/vue-treeselect';
 import '@riophae/vue-treeselect/dist/vue-treeselect.css';
 export default {
-  components: { Treeselect },
+  components: {
+    Treeselect,
+    leftAside
+  },
   data() {
     return {
       // 侧边栏树形数据
       treeData: [],
-      id: 'id',
+      // id: 'id',
+      // 每一个tree节点的id
+      treeItemId: '',
       defaultProps: {
         children: 'directory',
         label: 'fdName'
       },
       // 搜索功能的数据
       input23: '',
-      // 表格数据
-      tableData: [{
-        date: '2016-05-02',
-        name: '王小虎',
-        address: '上海市'
-        }, {
-        date: '2016-05-04',
-        name: '王小虎',
-        address: '上海市'
-        }, {
-        date: '2016-05-01',
-        name: '王小虎',
-        address: '上海市普'
-        }, {
-        date: '2016-05-03',
-        name: '王小虎',
-        address: '上海市普'
-      }],
+      // 控制弹窗的现实和隐藏
+      isMessage: false,
+      // 传给弹窗的id
+      itemId: '',
+      // 右边文件表格数据
+      tableData: [],
       // 新建文件夹对话框
       dialogAddVisible: false,
       // 新建文件夹的输入框数据
@@ -208,8 +140,14 @@ export default {
       }
     },
       formLabelWidth: '120px',
+
       // 文件上传的数据
-      fileList:[]
+      // 上传接口
+      importFileUrl: '/api/support.platform/catalog/addfile.act',
+      // 上传时的参数
+      upLoadData: {
+        fdId: '123456'
+      }
     };
   },
   created() {
@@ -217,45 +155,64 @@ export default {
     this.loadtreeData();
   },
   methods: {
-    formatter(row, column) {
-      return row.date;
+    // 点击表格文档弹窗关闭
+    closeBox() {
+        this.isMessage = false;
     },
-    // 上传文件
-    async uploadFile(file) {
-      var formData=new FormData()
-      formData.append('file',file)
-      var file = formData
-      const res = await this.$ajax.post('/api/support.platform/catalog/addfile.act', file)
+    // 点击表格中的文件...更多
+    moreClick(data) {
+      this.isMessage = true;
+      this.itemId = data.id;
     },
-    uploadUrl(){
-      var url = process.env.BASE_API + "url";
-      return url;
+    // 子组件向父组件传参,左侧每一项点击事件传递过来的参数
+    async showMsgFromChild(data) {
+      this.treeItemId = data;
+      const res = await this.$ajax.get(
+        "/api/support.platform/catalog/getchildfiles.act?fdId=" + this.treeItemId
+      );
+      console.log(res.data);
+      const tableData = res.data.value.dataList;
+      this.tableData = tableData;
     },
-    handleRemove(file, fileList) {
-      console.log(file, fileList);
+    // 下载
+    downloadFile(data) {
+      console.log(data);
     },
-    handlePreview(file) {
-      console.log(file);
-    },
-    handleExceed(files, fileList) {
-      this.$message.warning(`当前限制选择 3 个文件，本次选择了 ${files.length} 个文件，共选择了 ${files.length + fileList.length} 个文件`);
-    },
-    beforeRemove(file, fileList) {
-      return this.$confirm(`确定移除 ${ file.name }？`)
-    },
-    handleSuccess(){
-        //上传成功要处理的事
-    },
-    handlePreview(){
-        //上传前要处理的事
+    // 删除
+    handleDel(id){
+        const _this = this;
+        _this.isMessage = false;
+        // 删除
+        this.$ajax.post('/api/support.platform/rs/recoveryFd.act', {
+            fdFileId: this.itemId,
+            reason: null
+        })
+        .then(function (res) {
+            // console.log(res);
+            // _this.$parent.showMsgFromChild(itemId);
+            _this.showMsgFromChild(_this.treeItemId)
+            // console.log(_this.showMsgFromChild(_this.treeItemId));
+        })
+        .catch(function (error) {
+            // console.log(error);
+        })
     },
 
+    // 上传文件
+    // 上传成功
+    uploadSuccess (response, file, fileList) {
+      // console.log('上传文件', response)
+    },
+    // 上传失败
+    uploadError (response, file, fileList) {
+      // console.log('上传失败，请重试！')
+    },
     // 展示左边树目录
     async loadData() {
       const res = await this.$ajax.get('/api/support.platform/catalog/fdtree.act?fdId=0');
       const data = res.data.value;
       this.treeData = data;
-      console.log(data)
+      // console.log(data)
     },
 
     // Treeselect的展示
@@ -263,7 +220,7 @@ export default {
       const res = await this.$ajax.get('/api/support.platform/catalog/getfdtree.act?fdId=0');
       const data = res.data.value;
       this.options = data;
-      console.log(data)
+      // console.log(data)
     },
 
     // 点击新建文件夹中的确定按钮
@@ -393,7 +350,6 @@ export default {
   color: #fdfdfd;
 }
 
-/* 寇义东 */
 /* 侧边左部 */
 .aside-left-item {
   background-color: #409eff;
@@ -513,6 +469,74 @@ export default {
 .aside-right .el-tree {
   margin-top: 15px;
   padding-left: 15px;
+}
+
+/* 回收站 */
+.recycleBox {
+  margin-left: 15px;
+  font-size: 0;
+  cursor: pointer;
+}
+.recycleBox:hover {
+  background-color: #f5f7fa;
+}
+.recycleBG {
+  background-color: #f5f7fa;
+}
+.recycleBox i {
+  font-size: 12px;
+  padding: 6px;
+}
+.recycleBox .recyle {
+  font-size: 14px;
+  color: #606266;
+}
+.iconfont, .el-icon-more{
+  cursor: pointer;
+}
+.messageBox{
+
+  background: rgba(48, 48, 48, 0.6);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 999;
+}
+
+/* 弹窗 */
+#messageBox{
+    position: absolute;
+    z-index: 99;
+    top: 240px;
+    right: 15px;
+    font-size:14px;
+    padding: 5px 0;
+    min-width: 200px;
+    background: #fff;
+    box-shadow: 0 0 24px rgba(0,0,0,.18);
+}
+#messageBox li{
+    margin: 0 0 2px;
+    cursor: pointer;
+    transition: padding-left .2s;
+}
+#messageBox li:hover{
+    padding-left: 10px;
+    transition: padding-left .2s;
+    background-color: #dedede;
+}
+#messageBox li a{
+    font-size: 14px;
+    padding: 5px 18px;
+    line-height: 30px;
+    color: #666;
+    text-decoration: none;
+    box-sizing: border-box;
+}
+#messageBox li a:hover{
+    color: #333;
 }
 
 </style>
