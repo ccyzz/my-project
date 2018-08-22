@@ -173,30 +173,25 @@ export default {
         children: 'directory',
         label: 'fdName'
       },
+      // 搜索功能的数据
       input23: '',
+      // 表格数据
       tableData: [{
         date: '2016-05-02',
         name: '王小虎',
         address: '上海市'
-      }, {
+        }, {
         date: '2016-05-04',
         name: '王小虎',
         address: '上海市'
-      }, {
+        }, {
         date: '2016-05-01',
         name: '王小虎',
         address: '上海市普'
-      }, {
+        }, {
         date: '2016-05-03',
         name: '王小虎',
         address: '上海市普'
-      }],
-      fileList3: [{
-        name: 'food.jpeg',
-        url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100'
-      }, {
-        name: 'food2.jpeg',
-        url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100'
       }],
       // 新建文件夹对话框
       dialogAddVisible: false,
@@ -204,7 +199,6 @@ export default {
       formData: {
         dirName: ''
       },
-      // value: '',
       options:[],
       normalizer(node) {
       return {
@@ -213,17 +207,6 @@ export default {
         children: node.childrens,
       }
     },
-      // input: '',
-      // form: {
-      //   name: '',
-      //   region: '',
-      //   date1: '',
-      //   date2: '',
-      //   delivery: false,
-      //   type: [],
-      //   resource: '',
-      //   desc: ''
-      // },
       formLabelWidth: '120px',
       // 文件上传的数据
       fileList:[]
@@ -267,13 +250,15 @@ export default {
         //上传前要处理的事
     },
 
-    // 展示目录
+    // 展示左边树目录
     async loadData() {
       const res = await this.$ajax.get('/api/support.platform/catalog/fdtree.act?fdId=0');
       const data = res.data.value;
       this.treeData = data;
       console.log(data)
     },
+
+    // Treeselect的展示
     async loadtreeData() {
       const res = await this.$ajax.get('/api/support.platform/catalog/getfdtree.act?fdId=0');
       const data = res.data.value;
