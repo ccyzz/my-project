@@ -106,6 +106,7 @@
 import leftAside from '../components/aside';
 import Treeselect from '@riophae/vue-treeselect';
 import '@riophae/vue-treeselect/dist/vue-treeselect.css';
+import qs from 'qs';
 export default {
   components: {
     Treeselect,
@@ -288,18 +289,27 @@ export default {
     },
 
     // 点击新建文件夹中的确定按钮
-    // async handleAdd() {
-    //   const data = JSON.stringify({"dirName": this.formData.dirName,"pid": this.value})
-    //   const res = await this.$ajax.post('/api/support.platform/catalog/addfd.act', data);
-    //   console.log(res)
-    // }
     handleAdd() {
-      $.get('/api/support.platform/catalog/addfd.act?dirName='+this.formData.dirName+'&pid='+this.value, function(res) {
-        console.log(res);
-      } );
-      this.dialogAddVisible = false;
-      this.showMsgFromChild(this.value);
+      const data = {"dirName": this.formData.dirName,"pid": this.value};
+      // const res = await this.$ajax.post('/api/support.platform/catalog/addfd.act', data);
+      // console.log(res)
+      const options = {
+        method: 'POST',
+        headers: { 'content-type': 'application/x-www-form-urlencoded' },
+        data: qs.stringify(data),
+        url: '/api/support.platform/catalog/addfd.act'
+      };
+      this.$ajax(options);
+      // const res = await this.$ajax.post('/api/support.platform/catalog/addfd.act', data);
     }
+
+    // handleAdd() {
+    //   $.get('/api/support.platform/catalog/addfd.act?dirName='+this.formData.dirName+'&pid='+this.value, function(res) {
+    //     console.log(res);
+    //   } );
+    //   this.dialogAddVisible = false;
+    //   this.showMsgFromChild(this.value);
+    // }
   },
  }
 </script>

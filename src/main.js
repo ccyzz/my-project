@@ -9,6 +9,7 @@ import './assets/iconfont/iconfont.css';
 import './assets/css/style.css';
 import axios from 'axios';
 
+// Vue.prototype.$http = axios
 Vue.prototype.$ajax = axios;
 Vue.config.productionTip = false;
 
