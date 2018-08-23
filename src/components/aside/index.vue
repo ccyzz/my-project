@@ -28,7 +28,7 @@
               <li>
                 <a href="javascript:;" class="aside-left-item">
                   <span class="middle-icon font-s">
-                    <i class="iconfont icon-wangpan1" style="font-size: 18px;"></i>
+                    <i class="iconfont icon-wangpan" style="font-size: 18px;"></i>
                   </span>
                   <span class="name">网盘</span>
                 </a>
@@ -86,18 +86,18 @@
 <script>
 export default {
     data() {
-        return {
-            input23: '',
-            // 样式控制
-            isRecycle: false,
-            recycleBox: 'recycleBox',
-            // 侧边栏树形数据
-            treeData: [],
-            defaultProps: {
-            children: 'directory',
-            label: 'fdName'
-            }
-        }
+      return {
+          input23: '',
+          // 样式控制
+          isRecycle: false,
+          recycleBox: 'recycleBox',
+          // 侧边栏树形数据
+          treeData: [],
+          defaultProps: {
+          children: 'directory',
+          label: 'fdName'
+          }
+      }
     },
     created() {
       this.loadData();
@@ -108,6 +108,7 @@ export default {
         const res = await this.$ajax.get('/api/support.platform/catalog/fdtree.act?fdId=0');
         const data = res.data.value;
         this.treeData = data;
+        // console.log(res)
       },
       // 回收站样式
       goPage(data){
@@ -116,7 +117,11 @@ export default {
       // 获取每一个tree节点的id并传给父组件
       // $(item1, item2) 第一个参数是父组件中调用的监听器，第二个参数是传给父组件的参数
       handleNodeClick(nodeObj, node, nodeComponent) {
-        this.$emit('listenToChildEvent', nodeObj.id);
+        // console.log(this.treeData);
+        // console.log(nodeObj)
+        // console.log(node);
+        // console.log(nodeComponent);
+        this.$emit('listenToChildEvent', nodeObj);
       }
     }
 }

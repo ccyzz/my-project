@@ -52,12 +52,17 @@
             :data="tableData"
             style="width: 100%">
             <el-table-column
-              prop="fileName"
+              prop="name"
               label="文件名"
               width="180">
+              <template slot-scope="scope">
+                <!-- 1是文件 2是文件夹 -->
+                <span class="folderType" v-if="scope.row.type == '1'" @click="onFolder(scope.row.id)">{{scope.row.name}}</span>
+                <span class="folderType" v-else @click="onFolder(scope.row.id)">{{scope.row.name}}</span>
+              </template>
             </el-table-column>
             <el-table-column
-              prop="fileSize"
+              prop="fileObj.fileSize"
               label="大小"
               width="180">
             </el-table-column>
@@ -66,7 +71,7 @@
               label="更新人">
             </el-table-column>
             <el-table-column
-              prop="updateDate"
+              prop="updateTime"
               label="更新时间"
               sortable
               >
@@ -87,8 +92,8 @@
                 <li><a href="javascript:;">移动</a></li>
                 <li><a href="javascript:;">复制</a></li>
                 <li><a href="javascript:;">下载</a></li>
-                <li><a href="javascript:;">重命名</a></li>
-                <li><a href="javascript:;" @click="handleDel(itemId)">删除</a></li>
+                <li><a href="javascript:;" @click="fnRename(tableItemInfo)">重命名</a></li>
+                <li><a href="javascript:;" @click="handleDel(tableItemInfo.id, tableItemInfo.type)">删除</a></li>
             </ul>
           </div>
         </div>
@@ -111,8 +116,10 @@ export default {
       // 侧边栏树形数据
       treeData: [],
       // id: 'id',
+      // 每一个tree节点对象
+      treeNodeObj: {},
       // 每一个tree节点的id
-      treeItemId: '',
+      treeNodeId: '0',
       defaultProps: {
         children: 'directory',
         label: 'fdName'
@@ -121,8 +128,8 @@ export default {
       input23: '',
       // 控制弹窗的现实和隐藏
       isMessage: false,
-      // 传给弹窗的id
-      itemId: '',
+      // 表格中的每一条数据
+      tableItemInfo: {},
       // 右边文件表格数据
       tableData: [],
       // 新建文件夹对话框
@@ -149,58 +156,117 @@ export default {
     };
   },
   created() {
-    this.loadData();
+    this.showMsgFromChild(this.treeNodeId)
     this.loadtreeData();
   },
   methods: {
-    // 点击表格文档弹窗关闭
+    // 文件夹的点击事件
+    onFolder(id) {
+      this.showMsgFromChild(id);
+    },
+     // 点击表格文档弹窗关闭
     closeBox() {
         this.isMessage = false;
     },
     // 点击表格中的文件...更多
     moreClick(data) {
       this.isMessage = true;
-      this.itemId = data.id;
+      this.tableItemInfo = data;
     },
-    // 子组件向父组件传参,左侧每一项点击事件传递过来的参数
-    async showMsgFromChild(data) {
-      this.treeItemId = data;
-      // 上传文件参数
-      this.upLoadData.fdId = data;
-      // console.log(this.upLoadData.fdId);
-      console.log(data);
+    // 子组件向父组件传参,左侧每一项点击事件传递过来的参数（被点击的节点对象）
+    async showMsgFromChild(nodeObj) {
+      const _this = this;
+      this.treeNodeObj = nodeObj;
+      // console.log(typeof nodeObj);
+      if(typeof nodeObj != 'string'){
+        this.treeNodeId = nodeObj.id
+        // console.log('nodeObj的类型是object！')
+      }else{
+        this.treeNodeId = nodeObj;
+      }
+      // console.log(this.treeNodeId);
       const res = await this.$ajax.get(
-        "/api/support.platform/catalog/getchildfiles.act?fdId=" + this.treeItemId
+        "/api/support.platform/catalog/getchildfiles.act?fdId=" + (nodeObj ? this.treeNodeId : '0')
       );
-      console.log(res.data);
-      const tableData = res.data.value.dataList;
+      const tableData = res.data.value;
       this.tableData = tableData;
+      // console.log(this.tableData);
     },
     // 下载
     downloadFile(data) {
       console.log(data);
     },
+
     // 删除
-    handleDel(id){
+    handleDel(id, type){
         const _this = this;
-        _this.isMessage = false;
-        // 删除
-        this.$ajax.post('/api/support.platform/rs/recoveryFd.act', {
-            fdFileId: this.itemId,
-            reason: null
-        })
-        .then(function (res) {
-            _this.showMsgFromChild(_this.treeItemId)
-        })
-        .catch(function (error) {
-            // console.log(error);
-        })
+        this.isMessage = false;
+
+        this.$confirm('确定要删除吗？?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.$ajax.get('/api/support.platform/rs/recoveryFd.act?fdFileId='+id+'&type='+type)
+          .then(() => {
+            this.$message.success('删除成功')
+            this.showMsgFromChild(_this.treeNodeId)
+          })
+          .catch(() => {
+            this.$message.success('删除失败')
+          })
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消删除'
+          });
+        });
+    },
+        // 重命名
+    fnRename(obj){
+      // 1是文件 2是文件夹
+      console.log(obj);
+      this.$prompt('请输入新名称', '重命名', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          inputValue: obj.name
+      })
+      .then(() => {
+        if(obj.type == 1){
+          const fileRes = this.$ajax.get("/api/support.platform/file/renameFile.act")
+          .then(() => {
+            this.$message.success('重命名成功');
+          })
+          .catch(() => {
+            this.$message.success('重命名失败');
+          });
+          console.log(fileRes);
+        }else{
+          const folderRes = this.$ajax.get("/api/support.platform/catalog/renamefd.act")
+          .then(() => {
+            this.$message.success('重命名成功');
+          })
+          .catch(() => {
+            this.$message.success('重命名失败');
+          });
+          console.log(folderRes);
+        }
+      })
+      .catch(() => {
+        this.$message({
+          type: 'info',
+          message: '取消输入'
+        });
+      });
+      // if(fileRes){
+
+      // }
     },
 
     // 上传文件
     // 上传成功
     uploadSuccess (response, file, fileList) {
-      alert(1)
+      // alert(1)
     },
     // 上传失败
     uploadError (response, file, fileList) {
@@ -223,14 +289,16 @@ export default {
 
     // 点击新建文件夹中的确定按钮
     // async handleAdd() {
-    //   const res = await this.$ajax.post('/api/support.platform/catalog/addfd.act', {"dirName": this.formData.dirName,"pid": this.value}, {'Content-Type':'text/html;charset=utf-8'
-    //   });
+    //   const data = JSON.stringify({"dirName": this.formData.dirName,"pid": this.value})
+    //   const res = await this.$ajax.post('/api/support.platform/catalog/addfd.act', data);
+    //   console.log(res)
     // }
     handleAdd() {
       $.get('/api/support.platform/catalog/addfd.act?dirName='+this.formData.dirName+'&pid='+this.value, function(res) {
         console.log(res);
       } );
       this.dialogAddVisible = false;
+      this.showMsgFromChild(this.value);
     }
   },
  }
@@ -544,5 +612,9 @@ export default {
 }
 #messageBox li a:hover{
     color: #333;
+}
+/* 文件名 */
+.folderType{
+  cursor: pointer;
 }
 </style>
