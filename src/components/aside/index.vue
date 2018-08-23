@@ -28,7 +28,7 @@
               <li>
                 <a href="javascript:;" class="aside-left-item">
                   <span class="middle-icon font-s">
-                    <i class="iconfont icon-wangpan" style="font-size: 18px;"></i>
+                    <i class="iconfont icon-wangpan1" style="font-size: 18px;"></i>
                   </span>
                   <span class="name">网盘</span>
                 </a>
@@ -66,6 +66,7 @@
             <!-- tree -->
             <el-tree
             :data="treeData"
+            :render-content="renderContent"
             :props="defaultProps"
             node-key="id"
             @node-click="handleNodeClick"
@@ -93,9 +94,11 @@ export default {
           recycleBox: 'recycleBox',
           // 侧边栏树形数据
           treeData: [],
+
           defaultProps: {
-          children: 'directory',
-          label: 'fdName'
+            children: 'directory',
+            className: '',
+            label: 'fdName'
           }
       }
     },
@@ -108,11 +111,21 @@ export default {
         const res = await this.$ajax.get('/api/support.platform/catalog/fdtree.act?fdId=0');
         const data = res.data.value;
         this.treeData = data;
-        // console.log(res)
+        console.log(data)
+      },
+      // tree图标
+      renderContent(h, {node, data, store}) {
+          return (
+            <span class="custom-tree-node">
+              <i class='iconfont icon-wenjian6'></i>
+              <span style="margin-left:5px;">{node.label}</span>
+            </span>
+          );
       },
       // 回收站样式
       goPage(data){
           this.isRecycle = true;
+          this.$router.push({name: 'recycle'});
       },
       // 获取每一个tree节点的id并传给父组件
       // $(item1, item2) 第一个参数是父组件中调用的监听器，第二个参数是传给父组件的参数
@@ -233,6 +246,11 @@ export default {
   overflow: hidden;
   font-size: 12px;
   color: #fdfdfd;
+}
+/* 树图标 */
+.icon-wenjian6 {
+  color: skyblue;
+  font-size: 16px;
 }
 
 /* 寇义东 */

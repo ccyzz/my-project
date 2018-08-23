@@ -56,24 +56,11 @@
               label="文件名"
               width="180">
               <template slot-scope="scope">
-                <span v-if="scope.row.fileObj">
-                  <i style="color: skyblue;" v-if="scope.row.fileObj.fileType == 'txt'" class="iconfont icon-txtwenjian"></i>
-                  <i style="color: skyblue;" v-else-if="scope.row.fileObj.fileType == 'png' ||
-                    scope.row.directory.fileType == 'jpg' ||
-                    scope.row.directory.fileType == 'gif'"
-                    class="iconfont icon-wenjiantupian">
-                  </i>
-                  <i style="color: skyblue;" v-else-if="scope.row.fileObj.fileType == 'word'" class="iconfont icon-wenjianword"></i>
-                  <i style="color: skyblue;" v-else-if="scope.row.fileObj.fileType == 'pdf'" class="iconfont icon-pdf1"></i>
-                  <i style="color: skyblue;" v-else-if="scope.row.fileObj.fileType == 'ppt'" class="iconfont icon-pptwenjian"></i>
-                  <i style="color: skyblue;" v-else-if="scope.row.fileObj.fileType == 'exel'" class="iconfont icon-Exelfileformat"></i>
-                  <i style="color: skyblue;" v-else-if="scope.row.fileObj.fileType == 'mp4'" class="iconfont icon-wenjianshipin"></i>
-                  <i style="color: skyblue;" v-else-if="scope.row.fileObj.fileType == 'zip'" class="iconfont icon-filezip"></i>
-                </span>
-                <span v-else-if="scope.row.fileObj == null">
-                  <i style="color: skyblue; font-size: 18px;" class="iconfont icon-wenjian"></i>
-                </span>
-                <!-- 1是文件 2是文件夹  -->
+                <!-- 1是文件 2是文件夹 -->
+                <i :list="scope" v-if="scope.row.fileObj.fileType">
+                  <!-- <i></i> -->
+                </i>
+                <i v-else></i>
                 <span class="folderType" v-if="scope.row.type == '1'">{{scope.row.name}}</span>
                 <span class="folderType" v-else @click="onFolder(scope.row.id)">{{scope.row.name}}</span>
               </template>
@@ -318,7 +305,6 @@ export default {
         url: '/api/support.platform/catalog/addfd.act'
       };
        this.$ajax(options);
-       this.$refs.myAside.loadData();
     }
 
     // handleAdd() {
