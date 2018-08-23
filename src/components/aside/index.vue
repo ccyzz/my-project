@@ -28,7 +28,7 @@
               <li>
                 <a href="javascript:;" class="aside-left-item">
                   <span class="middle-icon font-s">
-                    <i class="iconfont icon-wangpan" style="font-size: 18px;"></i>
+                    <i class="iconfont icon-wangpan1" style="font-size: 18px;"></i>
                   </span>
                   <span class="name">网盘</span>
                 </a>
@@ -374,4 +374,3 @@ export default {
 }
 
 </style>
-

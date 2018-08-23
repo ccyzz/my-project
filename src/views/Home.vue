@@ -35,7 +35,7 @@
           <el-col :span="3">
             <el-upload
               class='ensure ensureButt'
-              :action="importFileUrl"
+              action="/api/support.platform/catalog/addfile.act"
               :data="upLoadData"
               name="importfile"
               :onError="uploadError"
@@ -131,22 +131,20 @@ export default {
       formData: {
         dirName: ''
       },
+      value: '',
       options:[],
       normalizer(node) {
-      return {
-        id: node.id,
-        label: node.name,
-        children: node.childrens,
-      }
-    },
+        return {
+          id: node.id,
+          label: node.name,
+          children: node.childrens,
+        }
+      },
       formLabelWidth: '120px',
-
-      // 文件上传的数据
-      // 上传接口
-      importFileUrl: '/api/support.platform/catalog/addfile.act',
       // 上传时的参数
       upLoadData: {
-        fdId: '123456'
+        version: '1',
+        fdId: ''
       }
     };
   },
@@ -167,6 +165,10 @@ export default {
     // 子组件向父组件传参,左侧每一项点击事件传递过来的参数
     async showMsgFromChild(data) {
       this.treeItemId = data;
+      // 上传文件参数
+      this.upLoadData.fdId = data;
+      // console.log(this.upLoadData.fdId);
+      console.log(data);
       const res = await this.$ajax.get(
         "/api/support.platform/catalog/getchildfiles.act?fdId=" + this.treeItemId
       );
@@ -188,10 +190,7 @@ export default {
             reason: null
         })
         .then(function (res) {
-            // console.log(res);
-            // _this.$parent.showMsgFromChild(itemId);
             _this.showMsgFromChild(_this.treeItemId)
-            // console.log(_this.showMsgFromChild(_this.treeItemId));
         })
         .catch(function (error) {
             // console.log(error);
@@ -201,7 +200,7 @@ export default {
     // 上传文件
     // 上传成功
     uploadSuccess (response, file, fileList) {
-      // console.log('上传文件', response)
+      alert(1)
     },
     // 上传失败
     uploadError (response, file, fileList) {
@@ -212,7 +211,7 @@ export default {
       const res = await this.$ajax.get('/api/support.platform/catalog/fdtree.act?fdId=0');
       const data = res.data.value;
       this.treeData = data;
-      // console.log(data)
+      console.log(data)
     },
 
     // Treeselect的展示
@@ -220,25 +219,18 @@ export default {
       const res = await this.$ajax.get('/api/support.platform/catalog/getfdtree.act?fdId=0');
       const data = res.data.value;
       this.options = data;
-      // console.log(data)
     },
 
     // 点击新建文件夹中的确定按钮
-    async handleAdd() {
-      const json = {"dirName": this.formData.dirName,"pid": this.value};
-      const jsonStr = JSON.stringify(json);
-      const res = await this.$ajax.post('/api/support.platform/catalog/addfd.act', jsonStr);
-      // this.$ajax({
-      //   url:'/api/support.platform/catalog/addfd.act',
-			// 	method: 'post',
-      //   data:  {
-      //     dirName: this.formData.dirName,
-      //     pid: this.value
-      //   },
-      //   headers:{
-			// 			'Content-Type':'text/plain;charset=UTF-8'
-			// 		}
-      // });
+    // async handleAdd() {
+    //   const res = await this.$ajax.post('/api/support.platform/catalog/addfd.act', {"dirName": this.formData.dirName,"pid": this.value}, {'Content-Type':'text/html;charset=utf-8'
+    //   });
+    // }
+    handleAdd() {
+      $.get('/api/support.platform/catalog/addfd.act?dirName='+this.formData.dirName+'&pid='+this.value, function(res) {
+        console.log(res);
+      } );
+      this.dialogAddVisible = false;
     }
   },
  }
@@ -280,8 +272,23 @@ export default {
 .header .place {
   margin-top: 10px;
 }
-.header .el-input--suffix {
-  width: 100%;
+.header .vue-treeselect__control {
+  width: 60%;
+}
+.header .el-select {
+  width: 60%;
+}
+.header .el-upload-list__item {
+  height: 100px;
+  width: 200px;
+  position: absolute;
+  right: -10px;
+  top: 60px;
+  background-color: #fff;
+  z-index: 10;
+  width: 200px;
+  border-radius: 3px;
+  box-shadow: 0 0 24px rgba(0,0,0,.18);
 }
 
 /* 主列表部分 */
@@ -538,5 +545,4 @@ export default {
 #messageBox li a:hover{
     color: #333;
 }
-
 </style>
