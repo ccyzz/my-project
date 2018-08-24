@@ -74,7 +74,7 @@
                   <i style="color: skyblue; font-size: 30px;" v-else-if="scope.row.fileObj.fileType == 'zip'" class="iconfont icon-filezip"></i>
                 </span>
                 <span v-else>
-                  <i style="color: skyblue; font-size: 30px;" class="iconfont icon-wenjian8"></i>
+                  <i style="color: skyblue; font-size: 30px; padding-top: 10px;" class="iconfont icon-wenjian8"></i>
                 </span>
                 <!-- 1是文件 2是文件夹  -->
                 <span class="folderType" v-if="scope.row.type == '1'">{{scope.row.name}}</span>
@@ -172,6 +172,7 @@ export default {
       formData: {
         dirName: ''
       },
+      // Treeselect中获取fid的
       value: '',
       options:[],
       normalizer(node) {
@@ -220,8 +221,8 @@ export default {
         this.treeNodeId = nodeObj;
       }
       // console.log(this.treeNodeId);
-      const res = await this.$ajax.get(
-        "/api/support.platform/catalog/getchildfiles.act?fdId=" + (nodeObj ? this.treeNodeId : '0')
+      const res = await this.$http.get(
+        "support.platform/catalog/getchildfiles.act?fdId=" + (nodeObj ? this.treeNodeId : '0')
       );
       const tableData = res.data.value;
       this.tableData = tableData;
@@ -242,7 +243,7 @@ export default {
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
-          this.$ajax.get('/api/support.platform/rs/recoveryFd.act?fdFileId='+id+'&type='+type)
+          this.$http.get('/support.platform/rs/recoveryFd.act?fdFileId='+id+'&type='+type)
           .then(() => {
             this.$message.success('删除成功')
             this.showMsgFromChild(_this.treeNodeId)
@@ -270,7 +271,7 @@ export default {
         // 1文件
         if(obj.type == 1){
           const id = obj.fileObj.id;
-          const fileRes = this.$ajax.get("/api/support.platform/file/renameFile.act?ID=" + id + "&FileName=" + valueObj.value)
+          const fileRes = this.$http.get("/support.platform/file/renameFile.act?ID=" + id + "&FileName=" + valueObj.value)
           .then(() => {
             this.$message.success('重命名成功');
             this.showMsgFromChild(this.treeNodeId)
@@ -279,7 +280,7 @@ export default {
             this.$message.success('重命名失败');
           });
         }else{
-          const folderRes = this.$ajax.get("/api/support.platform/catalog/renamefd.act?fdId=" + obj.id + "&dirName=" + valueObj.value)
+          const folderRes = this.$http.get("/support.platform/catalog/renamefd.act?fdId=" + obj.id + "&dirName=" + valueObj.value)
           .then(() => {
             this.$message.success('重命名成功');
             this.showMsgFromChild(this.treeNodeId)
@@ -295,9 +296,6 @@ export default {
           message: '取消输入'
         });
       });
-      // if(fileRes){
-
-      // }
     },
 
     // 上传文件
@@ -312,14 +310,14 @@ export default {
     },
     // 展示左边树目录
     async loadData() {
-      const res = await this.$ajax.get('/api/support.platform/catalog/fdtree.act?fdId=0');
+      const res = await this.$http.get('/support.platform/catalog/fdtree.act?fdId=0');
       const data = res.data.value;
       this.treeData = data;
     },
 
     // Treeselect的展示 getfdtree
     async loadtreeData() {
-      const res = await this.$ajax.get('/api/support.platform/catalog/getfdtree.act?fdId=0');
+      const res = await this.$http.get('/support.platform/catalog/getfdtree.act?fdId=0');
       console.log(res);
       const data = res.data.value;
       this.options = data;
@@ -334,15 +332,17 @@ export default {
         method: 'POST',
         headers: { 'content-type': 'application/x-www-form-urlencoded' },
         data: qs.stringify(data),
-        url: '/api/support.platform/catalog/addfd.act'
+        url: '/support.platform/catalog/addfd.act'
       };
-      this.$ajax(options)
+      this.$http(options)
       .then((res) => {
-      console.log(res);
-
+        console.log(res);
+        this.dialogAddVisible = false;
+        this.showMsgFromChild(this.value);
+        this.$refs.myAside.loadData();
       })
       .catch((error) => {
-        console.log(error);
+        this.$message.error(error);
       });
     }
   },
