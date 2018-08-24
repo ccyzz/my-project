@@ -74,7 +74,7 @@
                   <i style="color: skyblue; font-size: 30px;" v-else-if="scope.row.fileObj.fileType == 'zip'" class="iconfont icon-filezip"></i>
                 </span>
                 <span v-else>
-                  <i style="color: skyblue; font-size: 30px;" class="iconfont icon-wenjian"></i>
+                  <i style="color: skyblue; font-size: 30px;" class="iconfont icon-wenjian8"></i>
                 </span>
                 <!-- 1是文件 2是文件夹  -->
                 <span class="folderType" v-if="scope.row.type == '1'">{{scope.row.name}}</span>
@@ -96,12 +96,26 @@
               sortable
               >
             </el-table-column>
-            <el-table-column label="操作">
+
+              <el-table-column label="操作">
+                <template slot-scope="props">
+                  <span v-if="props.row.type == 1">
+                  <a :href="'http://192.168.1.20:8081/support.platform/file/downloadFile.act?fileId=' + (props.row.fileObj ? props.row.fileObj.id : props.row.directory.id)"><i class="iconfont icon-xiazai3" @click="downloadFile(props.row.id)"></i></a>
+                  <i class="el-icon-more" @click="moreClick(props.row)"></i>
+                  </span>
+                  <span v-else>
+                  <!-- <a :href="'http://192.168.1.20:8081/support.platform/file/downloadFile.act?fileId=' + (props.row.fileObj ? props.row.fileObj.id : props.row.directory.id)"><i class="iconfont icon-xiazai3" @click="downloadFile(props.row.id)"></i></a> -->
+                  <i class="el-icon-more" @click="moreClick(props.row)"></i>
+                  </span>
+                </template>
+              </el-table-column>
+
+            <!-- <el-table-column label="操作">
               <template slot-scope="props">
                 <a :href="'http://192.168.1.20:8081/support.platform/file/downloadFile.act?fileId=' + props.row.id"><i class="iconfont icon-xiazai3" @click="downloadFile(props.row.id)"></i></a>
                 <i class="el-icon-more" @click="moreClick(props.row)"></i>
               </template>
-            </el-table-column>
+            </el-table-column> -->
           </el-table>
         </template>
         <!-- 弹窗 -->
@@ -324,12 +338,12 @@ export default {
       };
       this.$ajax(options)
       .then((res) => {
-      console.log(res)
+      console.log(res);
+
       })
       .catch((error) => {
-      console.log(error);
+        console.log(error);
       });
-      // const res = await this.$ajax.post('/api/support.platform/catalog/addfd.act', data);
     }
   },
  }
@@ -647,12 +661,5 @@ export default {
 /* 文件名 */
 .folderType{
   cursor: pointer;
-}
-.tableScrollbar {
-  height: 500px;
-  overflow: hidden;
-}
-.el-scrollbar__wrap{
-  overflow-x: hidden;
 }
 </style>
