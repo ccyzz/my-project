@@ -64,18 +64,19 @@
               </el-input>
             </div>
             <!-- tree -->
-            <el-tree
-            :data="treeData"
-            :render-content="renderContent"
-            :props="defaultProps"
-            node-key="id"
-            @node-click="handleNodeClick"
-            >
-            </el-tree>
+            <el-scrollbar class="treeSscrollbar">
+              <el-tree
+              :data="treeData"
+              :render-content="renderContent"
+              :props="defaultProps"
+              node-key="id"
+              @node-click="handleNodeClick"
+              >
+              </el-tree>
+            </el-scrollbar >
             <!-- 回收站 -->
             <div :class="[{recycleBG: isRecycle}, recycleBox]" @click="goPage('recyle')">
-            <!-- <div :class="classObject" @click="goPage(recyle)"> -->
-							<i class="el-icon-delete"></i>
+							<i class="el-icon-delete" style="font-size: 14px"></i>
               <span class="recyle">回收站</span>
             </div>
           </div>
@@ -111,7 +112,7 @@ export default {
         const res = await this.$ajax.get('/api/support.platform/catalog/fdtree.act?fdId=0');
         const data = res.data.value;
         this.treeData = data;
-        console.log(data)
+        // console.log(data)
       },
       // tree图标
       renderContent(h, {node, data, store}) {
@@ -130,10 +131,6 @@ export default {
       // 获取每一个tree节点的id并传给父组件
       // $(item1, item2) 第一个参数是父组件中调用的监听器，第二个参数是传给父组件的参数
       handleNodeClick(nodeObj, node, nodeComponent) {
-        // console.log(this.treeData);
-        // console.log(nodeObj)
-        // console.log(node);
-        // console.log(nodeComponent);
         this.$emit('listenToChildEvent', nodeObj);
       }
     }
@@ -395,5 +392,12 @@ export default {
   font-size: 14px;
   color: #606266;
 }
-
+/* tree滚动轴 */
+.treeSscrollbar{
+  height: 450px;
+  overflow: hidden;
+}
+.el-scrollbar__wrap{
+  overflow-x: hidden;
+}
 </style>

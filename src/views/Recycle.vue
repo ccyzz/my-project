@@ -5,45 +5,8 @@
     <el-container class="inContainer">
       <el-header class="header">
         <el-row>
-          <el-col :span="18" class="header-left">
-            <el-breadcrumb separator-class="el-icon-arrow-right">
-              <el-breadcrumb-item :to="{ path: '/home' }">企业网盘</el-breadcrumb-item>
-              <el-breadcrumb-item>公司照片</el-breadcrumb-item>
-            </el-breadcrumb>
-          </el-col>
-          <el-col :span="3">
-            <el-button icon="el-icon-plus" @click="dialogAddVisible = true" round type="primary" size="small">新建文件夹</el-button>
-            <el-dialog title="新建文件夹" :visible.sync="dialogAddVisible">
-              <el-form :model="formData">
-                <el-input v-model="formData.dirName" class="addinput" placeholder="输入文件夹的名称"></el-input>
-                <el-form-item class="place" label="所在位置" :label-width="formLabelWidth">
-                  <treeselect :normalizer="normalizer" v-model="value" :multiple="false" :options="options" />
-                </el-form-item>
-                <el-form-item label="可见范围" :label-width="formLabelWidth">
-                  <el-select placeholder="公开:企业所有成员都可以看见此文件夹">
-                    <el-option label="公开:企业所有成员都可以看见此文件夹" value=""></el-option>
-                    <el-option label="私有:只有加入的成员才能看见此文件夹" value=""></el-option>
-                  </el-select>
-                </el-form-item>
-              </el-form>
-              <div slot="footer" class="dialog-footer">
-                <el-button round @click="dialogAddVisible = false">取 消</el-button>
-                <el-button round type="primary" @click="handleAdd">确 定</el-button>
-              </div>
-            </el-dialog>
-          </el-col>
-          <el-col :span="3">
-            <el-upload
-              class='ensure ensureButt'
-              action="/api/support.platform/catalog/addfile.act"
-              :data="upLoadData"
-              name="importfile"
-              :onError="uploadError"
-              :onSuccess="uploadSuccess"
-              >
-              <el-button icon="el-icon-upload2" round type="primary" size="small">上传文件</el-button>
-            </el-upload>
-          </el-col>
+          <i style="color: skyblue; font-size: 20px; margin-right: 10px;" class="el-icon-delete"></i>
+          <span class="recyle">回收站</span>
         </el-row>
       </el-header>
       <el-main class="main">
@@ -89,7 +52,7 @@
           </el-table>
         </template>
         <!-- 弹窗 -->
-        <div v-if="isMessage" @click="closeBox()" class="messageBox">
+        <!-- <div v-if="isMessage" @click="closeBox()" class="messageBox">
           <div id="messageBox">
             <ul>
                 <li><a href="javascript:;">新建文件夹</a></li>
@@ -100,7 +63,7 @@
                 <li><a href="javascript:;" @click="handleDel(tableItemInfo.id, tableItemInfo.type)">删除</a></li>
             </ul>
           </div>
-        </div>
+        </div> -->
       </el-main>
     </el-container>
   </el-container>
@@ -108,20 +71,14 @@
 
 <script>
 import leftAside from '../components/aside';
-import Treeselect from '@riophae/vue-treeselect';
-import '@riophae/vue-treeselect/dist/vue-treeselect.css';
-import qs from 'qs';
 export default {
   components: {
-    Treeselect,
     leftAside
   },
   data() {
     return {
-      list: '',
       // 侧边栏树形数据
       treeData: [],
-      // id: 'id',
       // 每一个tree节点对象
       treeNodeObj: {},
       // 每一个tree节点的id
@@ -132,33 +89,10 @@ export default {
       },
       // 搜索功能的数据
       input23: '',
-      // 控制弹窗的现实和隐藏
-      isMessage: false,
       // 表格中的每一条数据
       tableItemInfo: {},
       // 右边文件表格数据
-      tableData: [],
-      // 新建文件夹对话框
-      dialogAddVisible: false,
-      // 新建文件夹的输入框数据
-      formData: {
-        dirName: ''
-      },
-      value: '',
-      options:[],
-      normalizer(node) {
-        return {
-          id: node.id,
-          label: node.name,
-          children: node.childrens,
-        }
-      },
-      formLabelWidth: '120px',
-      // 上传时的参数
-      upLoadData: {
-        version: '1',
-        fdId: ''
-      }
+      tableData: []
     };
   },
   created() {
@@ -170,21 +104,12 @@ export default {
     onFolder(id) {
       this.showMsgFromChild(id);
     },
-     // 点击表格文档弹窗关闭
-    closeBox() {
-        this.isMessage = false;
-    },
-    // 点击表格中的文件...更多
-    moreClick(data) {
-      this.isMessage = true;
-      this.tableItemInfo = data;
-    },
+
     // 点击目录在表格中显示文件
     // 子组件向父组件传参,左侧每一项点击事件传递过来的参数（被点击的节点对象）
     async showMsgFromChild(nodeObj) {
       // 上传文件的参数
       this.upLoadData.fdId = nodeObj.id;
-      const _this = this;
       this.treeNodeObj = nodeObj;
       if(typeof nodeObj != 'string'){
         this.treeNodeId = nodeObj.id
@@ -198,123 +123,17 @@ export default {
       );
       const tableData = res.data.value;
       this.tableData = tableData;
-      console.log(this.tableData);
-      console.log(nodeObj);
-    },
-    // 下载
-    downloadFile(data) {
-      console.log(data);
+      this.$router.push({name: 'home'});
     },
 
-    // 删除
-    handleDel(id, type){
-        const _this = this;
-        this.isMessage = false;
-
-        this.$confirm('确定要删除吗？?', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }).then(() => {
-          this.$ajax.get('/api/support.platform/rs/recoveryFd.act?fdFileId='+id+'&type='+type)
-          .then(() => {
-            this.$message.success('删除成功')
-            this.showMsgFromChild(_this.treeNodeId)
-          })
-          .catch(() => {
-            this.$message.success('删除失败')
-          })
-        }).catch(() => {
-          this.$message({
-            type: 'info',
-            message: '已取消删除'
-          });
-        });
-    },
-        // 重命名
-    fnRename(obj){
-      // 1是文件 2是文件夹
-      console.log(obj);
-      this.$prompt('请输入新名称', '重命名', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          inputValue: obj.name
-      })
-      .then(() => {
-        if(obj.type == 1){
-          const fileRes = this.$ajax.get("/api/support.platform/file/renameFile.act")
-          .then(() => {
-            this.$message.success('重命名成功');
-          })
-          .catch(() => {
-            this.$message.success('重命名失败');
-          });
-          console.log(fileRes);
-        }else{
-          const folderRes = this.$ajax.get("/api/support.platform/catalog/renamefd.act")
-          .then(() => {
-            this.$message.success('重命名成功');
-          })
-          .catch(() => {
-            this.$message.success('重命名失败');
-          });
-          console.log(folderRes);
-        }
-      })
-      .catch(() => {
-        this.$message({
-          type: 'info',
-          message: '取消输入'
-        });
-      });
-    },
-
-    // 上传文件
-    // 上传成功
-    uploadSuccess (response, file, fileList) {
-      // alert(1)
-    },
-    // 上传失败
-    uploadError (response, file, fileList) {
-      // console.log('上传失败，请重试！')
-    },
     // 展示左边树目录
     async loadData() {
       const res = await this.$ajax.get('/api/support.platform/catalog/fdtree.act?fdId=0');
       const data = res.data.value;
       this.treeData = data;
       console.log(data)
-    },
-
-    // Treeselect的展示
-    async loadtreeData() {
-      const res = await this.$ajax.get('/api/support.platform/catalog/getfdtree.act?fdId=0');
-      const data = res.data.value;
-      this.options = data;
-    },
-
-    // 点击新建文件夹中的确定按钮
-    handleAdd() {
-      const data = {"dirName": this.formData.dirName,"pid": this.value};
-      // const res = await this.$ajax.post('/api/support.platform/catalog/addfd.act', data);
-      // console.log(res)
-      const options = {
-        method: 'POST',
-        headers: { 'content-type': 'application/x-www-form-urlencoded' },
-        data: qs.stringify(data),
-        url: '/api/support.platform/catalog/addfd.act'
-      };
-       this.$ajax(options);
     }
-
-    // handleAdd() {
-    //   $.get('/api/support.platform/catalog/addfd.act?dirName='+this.formData.dirName+'&pid='+this.value, function(res) {
-    //     console.log(res);
-    //   } );
-    //   this.dialogAddVisible = false;
-    //   this.showMsgFromChild(this.value);
-    // }
-  },
+  }
  }
 </script>
 

@@ -1,7 +1,7 @@
 <template>
   <el-container class="container">
     <!-- 侧边部分 -->
-    <left-aside @listenToChildEvent="showMsgFromChild"></left-aside>
+    <left-aside @listenToChildEvent="showMsgFromChild" ref="myAside"></left-aside>
     <el-container class="inContainer">
       <el-header class="header">
         <el-row>
@@ -50,28 +50,31 @@
         <template>
           <el-table
             :data="tableData"
-            style="width: 100%">
+            style="width: 100%"
+            height="500"
+            >
             <el-table-column
               prop="name"
               label="文件名"
               width="180">
               <template slot-scope="scope">
                 <span v-if="scope.row.fileObj">
-                  <i style="color: skyblue;" v-if="scope.row.fileObj.fileType == 'txt'" class="iconfont icon-txtwenjian"></i>
-                  <i style="color: skyblue;" v-else-if="scope.row.fileObj.fileType == 'png' ||
-                    scope.row.directory.fileType == 'jpg' ||
-                    scope.row.directory.fileType == 'gif'"
-                    class="iconfont icon-wenjiantupian">
+                  <i v-if="scope.row.fileObj.fileType == 'null'" style="color: skyblue; font-size: 30px;" class="iconfont icon-wenjian"></i>
+                  <i style="color: skyblue; font-size: 30px;" v-else-if="scope.row.fileObj.fileType == 'txt'" class="iconfont icon-txtwenjian"></i>
+                  <i style="color: skyblue; font-size: 30px;" v-else-if="scope.row.fileObj.fileType == 'png' ||
+                    scope.row.fileObj.fileType == 'jpg' ||
+                    scope.row.fileObj.fileType == 'gif'"
+                    class="iconfont icon-wenjiantupian font-size: 30px;">
                   </i>
-                  <i style="color: skyblue;" v-else-if="scope.row.fileObj.fileType == 'word'" class="iconfont icon-wenjianword"></i>
-                  <i style="color: skyblue;" v-else-if="scope.row.fileObj.fileType == 'pdf'" class="iconfont icon-pdf1"></i>
-                  <i style="color: skyblue;" v-else-if="scope.row.fileObj.fileType == 'ppt'" class="iconfont icon-pptwenjian"></i>
-                  <i style="color: skyblue;" v-else-if="scope.row.fileObj.fileType == 'exel'" class="iconfont icon-Exelfileformat"></i>
-                  <i style="color: skyblue;" v-else-if="scope.row.fileObj.fileType == 'mp4'" class="iconfont icon-wenjianshipin"></i>
-                  <i style="color: skyblue;" v-else-if="scope.row.fileObj.fileType == 'zip'" class="iconfont icon-filezip"></i>
+                  <i style="color: skyblue; font-size: 30px;" v-else-if="scope.row.fileObj.fileType == 'doc' || scope.row.fileObj.fileType == 'docx'" class="iconfont icon-wenjianword"></i>
+                  <i style="color: skyblue; font-size: 30px;" v-else-if="scope.row.fileObj.fileType == 'pdf'" class="iconfont icon-pdf1"></i>
+                  <i style="color: skyblue; font-size: 30px;" v-else-if="scope.row.fileObj.fileType == 'ppt' || scope.row.fileObj.fileType == 'pptx'" class="iconfont icon-pptwenjian"></i>
+                  <i style="color: skyblue; font-size: 30px;" v-else-if="scope.row.fileObj.fileType == 'xls' || scope.row.fileObj.fileType == 'xlsx'" class="iconfont icon-Exelfileformat"></i>
+                  <i style="color: skyblue; font-size: 30px;" v-else-if="scope.row.fileObj.fileType == 'mp4'" class="iconfont icon-wenjianshipin"></i>
+                  <i style="color: skyblue; font-size: 30px;" v-else-if="scope.row.fileObj.fileType == 'zip'" class="iconfont icon-filezip"></i>
                 </span>
-                <span v-else-if="scope.row.fileObj == null">
-                  <i style="color: skyblue; font-size: 18px;" class="iconfont icon-wenjian"></i>
+                <span v-else>
+                  <i style="color: skyblue; font-size: 30px;" class="iconfont icon-wenjian"></i>
                 </span>
                 <!-- 1是文件 2是文件夹  -->
                 <span class="folderType" v-if="scope.row.type == '1'">{{scope.row.name}}</span>
@@ -131,10 +134,8 @@ export default {
   },
   data() {
     return {
-      list: '',
       // 侧边栏树形数据
       treeData: [],
-      // id: 'id',
       // 每一个tree节点对象
       treeNodeObj: {},
       // 每一个tree节点的id
@@ -197,7 +198,6 @@ export default {
     async showMsgFromChild(nodeObj) {
       // 上传文件的参数
       this.upLoadData.fdId = nodeObj.id;
-      const _this = this;
       this.treeNodeObj = nodeObj;
       if(typeof nodeObj != 'string'){
         this.treeNodeId = nodeObj.id
@@ -211,8 +211,8 @@ export default {
       );
       const tableData = res.data.value;
       this.tableData = tableData;
-      console.log(this.tableData);
-      console.log(nodeObj);
+      // console.log(this.tableData);
+      // console.log(nodeObj);
     },
     // 下载
     downloadFile(data) {
@@ -223,7 +223,6 @@ export default {
     handleDel(id, type){
         const _this = this;
         this.isMessage = false;
-
         this.$confirm('确定要删除吗？?', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
@@ -253,25 +252,27 @@ export default {
           cancelButtonText: '取消',
           inputValue: obj.name
       })
-      .then(() => {
+      .then(( valueObj ) => {
+        // 1文件
         if(obj.type == 1){
-          const fileRes = this.$ajax.get("/api/support.platform/file/renameFile.act")
+          const id = obj.fileObj.id;
+          const fileRes = this.$ajax.get("/api/support.platform/file/renameFile.act?ID=" + id + "&FileName=" + valueObj.value)
           .then(() => {
             this.$message.success('重命名成功');
+            this.showMsgFromChild(this.treeNodeId)
           })
           .catch(() => {
             this.$message.success('重命名失败');
           });
-          console.log(fileRes);
         }else{
-          const folderRes = this.$ajax.get("/api/support.platform/catalog/renamefd.act")
+          const folderRes = this.$ajax.get("/api/support.platform/catalog/renamefd.act?fdId=" + obj.id + "&dirName=" + valueObj.value)
           .then(() => {
             this.$message.success('重命名成功');
+            this.showMsgFromChild(this.treeNodeId)
           })
           .catch(() => {
             this.$message.success('重命名失败');
           });
-          console.log(folderRes);
         }
       })
       .catch(() => {
@@ -280,28 +281,32 @@ export default {
           message: '取消输入'
         });
       });
+      // if(fileRes){
+
+      // }
     },
 
     // 上传文件
     // 上传成功
     uploadSuccess (response, file, fileList) {
-      // alert(1)
+      this.showMsgFromChild(this.treeNodeId);
+      this.$refs.myAside.loadData();
     },
     // 上传失败
     uploadError (response, file, fileList) {
-      // console.log('上传失败，请重试！')
+      this.$message('上传失败');
     },
     // 展示左边树目录
     async loadData() {
       const res = await this.$ajax.get('/api/support.platform/catalog/fdtree.act?fdId=0');
       const data = res.data.value;
       this.treeData = data;
-      console.log(data)
     },
 
-    // Treeselect的展示
+    // Treeselect的展示 getfdtree
     async loadtreeData() {
       const res = await this.$ajax.get('/api/support.platform/catalog/getfdtree.act?fdId=0');
+      console.log(res);
       const data = res.data.value;
       this.options = data;
     },
@@ -317,17 +322,15 @@ export default {
         data: qs.stringify(data),
         url: '/api/support.platform/catalog/addfd.act'
       };
-       this.$ajax(options);
-       this.$refs.myAside.loadData();
+      this.$ajax(options)
+      .then((res) => {
+      console.log(res)
+      })
+      .catch((error) => {
+      console.log(error);
+      });
+      // const res = await this.$ajax.post('/api/support.platform/catalog/addfd.act', data);
     }
-
-    // handleAdd() {
-    //   $.get('/api/support.platform/catalog/addfd.act?dirName='+this.formData.dirName+'&pid='+this.value, function(res) {
-    //     console.log(res);
-    //   } );
-    //   this.dialogAddVisible = false;
-    //   this.showMsgFromChild(this.value);
-    // }
   },
  }
 </script>
@@ -644,5 +647,12 @@ export default {
 /* 文件名 */
 .folderType{
   cursor: pointer;
+}
+.tableScrollbar {
+  height: 500px;
+  overflow: hidden;
+}
+.el-scrollbar__wrap{
+  overflow-x: hidden;
 }
 </style>
