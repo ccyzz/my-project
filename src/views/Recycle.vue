@@ -1,29 +1,33 @@
 <template>
   <el-container class="container">
     <!-- 侧边部分 -->
-    <left-aside @listenToChildEvent="showMsgFromChild"></left-aside>
+    <left-aside @onRecycle="onRecycle"></left-aside>
     <el-container class="inContainer">
       <el-header class="header">
         <el-row>
-          <i style="color: skyblue; font-size: 20px; margin-right: 10px;" class="el-icon-delete"></i>
+          <el-col :span="22">
+            <i style="color: skyblue; font-size: 20px; margin-right: 10px;" class="el-icon-delete"></i>
           <span class="recyle">回收站</span>
+          </el-col>
+          <el-col :span="2">
+            <el-button @click="onDelect" round type="primary" size="small">清空</el-button>
+          </el-col>
         </el-row>
       </el-header>
       <el-main class="main">
         <template>
           <el-table
             :data="tableData"
-            style="width: 100%">
+            style="width: 100%"
+            height="500"
+            >
             <el-table-column
               prop="name"
               label="文件名"
               width="180">
               <template slot-scope="scope">
-                <!-- 1是文件 2是文件夹 -->
-                <i :list="scope" v-if="scope.row.fileObj.fileType">
-                  <!-- <i></i> -->
+                <i>
                 </i>
-                <i v-else></i>
                 <span class="folderType" v-if="scope.row.type == '1'">{{scope.row.name}}</span>
                 <span class="folderType" v-else @click="onFolder(scope.row.id)">{{scope.row.name}}</span>
               </template>
@@ -45,25 +49,12 @@
             </el-table-column>
             <el-table-column label="操作">
               <template slot-scope="props">
-                <a :href="'http://192.168.1.20:8081/support.platform/file/downloadFile.act?fileId=' + props.row.id"><i class="iconfont icon-xiazai3" @click="downloadFile(props.row.id)"></i></a>
-                <i class="el-icon-more" @click="moreClick(props.row)"></i>
+                <i style="padding-right: 5px;" title="还原" class="iconfont icon-reduction" @click="fnSestore(props.row.id)"></i>
+                <i style="padding-left: 5px;" title="彻底删除" class="iconfont icon-chedishanchu2" @click="fnDelete(props.row.id)"></i>
               </template>
             </el-table-column>
           </el-table>
         </template>
-        <!-- 弹窗 -->
-        <!-- <div v-if="isMessage" @click="closeBox()" class="messageBox">
-          <div id="messageBox">
-            <ul>
-                <li><a href="javascript:;">新建文件夹</a></li>
-                <li><a href="javascript:;">移动</a></li>
-                <li><a href="javascript:;">复制</a></li>
-                <li><a href="javascript:;">下载</a></li>
-                <li><a href="javascript:;" @click="fnRename(tableItemInfo)">重命名</a></li>
-                <li><a href="javascript:;" @click="handleDel(tableItemInfo.id, tableItemInfo.type)">删除</a></li>
-            </ul>
-          </div>
-        </div> -->
       </el-main>
     </el-container>
   </el-container>
@@ -77,64 +68,60 @@ export default {
   },
   data() {
     return {
-      // 侧边栏树形数据
-      treeData: [],
-      // 每一个tree节点对象
-      treeNodeObj: {},
-      // 每一个tree节点的id
-      treeNodeId: '0',
-      defaultProps: {
-        children: 'directory',
-        label: 'fdName'
-      },
-      // 搜索功能的数据
-      input23: '',
-      // 表格中的每一条数据
-      tableItemInfo: {},
-      // 右边文件表格数据
-      tableData: []
+      // 被删除数据列表
+      tableData:[]
     };
   },
   created() {
-    this.showMsgFromChild(this.treeNodeId)
-    this.loadtreeData();
+    this.onRecycle();
   },
   methods: {
-    // 文件夹的点击事件
-    onFolder(id) {
-      this.showMsgFromChild(id);
+    // 获取被删除数据列表
+    async onRecycle() {
+      const res = await this.$ajax.get('/api/rs/rsList.act');
+      this.tableData = (res.data.value);
     },
-
-    // 点击目录在表格中显示文件
-    // 子组件向父组件传参,左侧每一项点击事件传递过来的参数（被点击的节点对象）
-    async showMsgFromChild(nodeObj) {
-      // 上传文件的参数
-      this.upLoadData.fdId = nodeObj.id;
-      this.treeNodeObj = nodeObj;
-      if(typeof nodeObj != 'string'){
-        this.treeNodeId = nodeObj.id
-        // console.log('nodeObj的类型是object！')
+    onDelect() {
+      alert(1)
+    },
+    // 还原
+    async fnSestore(id) {
+      console.log('id:'+id);
+      const res = await this.$ajax.get('/api/rs/restoreyFd.act?rsId=' + id);
+      console.log(res.status);
+      if(res.status == '200'){
+        this.$message('还原成功');
+        this.onRecycle();
       }else{
-        this.treeNodeId = nodeObj;
+        this.$message('还原失败');
       }
-      // console.log(this.treeNodeId);
-      const res = await this.$ajax.get(
-        "/api/support.platform/catalog/getchildfiles.act?fdId=" + (nodeObj ? this.treeNodeId : '0')
-      );
-      const tableData = res.data.value;
-      this.tableData = tableData;
-      this.$router.push({name: 'home'});
     },
-
-    // 展示左边树目录
-    async loadData() {
-      const res = await this.$ajax.get('/api/support.platform/catalog/fdtree.act?fdId=0');
-      const data = res.data.value;
-      this.treeData = data;
-      console.log(data)
+    // 删除
+    fnDelete(id) {
+      this.$confirm('确定要删除吗？?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+      .then(() => {
+        const res = this.$ajax.get('/api/rs/deleteRs.act?rsId=' + id)
+        .then(() => {
+          this.$message.success('删除成功')
+          this.onRecycle();
+        })
+        .catch(() => {
+          this.$message.success('删除失败')
+        })
+      })
+      .catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消删除'
+        });
+      });
     }
   }
- }
+}
 </script>
 
 <style>

@@ -17,7 +17,7 @@
               <el-form :model="formData">
                 <el-input v-model="formData.dirName" class="addinput" placeholder="输入文件夹的名称"></el-input>
                 <el-form-item class="place" label="所在位置" :label-width="formLabelWidth">
-                  <treeselect :normalizer="normalizer" v-model="value" :multiple="false" :options="options" />
+                  <treeselect :normalizer="normalizer" :multiple="false" :options="options" />
                 </el-form-item>
                 <el-form-item label="可见范围" :label-width="formLabelWidth">
                   <el-select placeholder="公开:企业所有成员都可以看见此文件夹">
@@ -35,7 +35,7 @@
           <el-col :span="3">
             <el-upload
               class='ensure ensureButt'
-              action="/api/support.platform/catalog/addfile.act"
+              action="/api/catalog/addfile.act"
               :data="upLoadData"
               name="importfile"
               :onError="uploadError"
@@ -49,9 +49,11 @@
       <el-main class="main">
         <template>
           <el-table
+            v-loading="loading"
             :data="tableData"
             style="width: 100%"
             height="500"
+            @row-click="ontableupload(loadId)"
             >
             <el-table-column
               prop="name"
@@ -72,9 +74,10 @@
                   <i style="color: skyblue; font-size: 30px;" v-else-if="scope.row.fileObj.fileType == 'xls' || scope.row.fileObj.fileType == 'xlsx'" class="iconfont icon-Exelfileformat"></i>
                   <i style="color: skyblue; font-size: 30px;" v-else-if="scope.row.fileObj.fileType == 'mp4'" class="iconfont icon-wenjianshipin"></i>
                   <i style="color: skyblue; font-size: 30px;" v-else-if="scope.row.fileObj.fileType == 'zip'" class="iconfont icon-filezip"></i>
+                  <i v-else class="iconfont icon-wenjian8" style="color: skyblue; font-size: 30px;"></i>
                 </span>
                 <span v-else>
-                  <i style="color: skyblue; font-size: 30px; padding-top: 10px;" class="iconfont icon-wenjian8"></i>
+                  <i style="color: skyblue; font-size: 30px; padding-top: 10px;" class="iconfont icon-2"></i>
                 </span>
                 <!-- 1是文件 2是文件夹  -->
                 <span class="folderType" v-if="scope.row.type == '1'">{{scope.row.name}}</span>
@@ -100,19 +103,18 @@
               <el-table-column label="操作">
                 <template slot-scope="props">
                   <span v-if="props.row.type == 1">
-                  <a :href="'http://192.168.1.20:8081/support.platform/file/downloadFile.act?fileId=' + (props.row.fileObj ? props.row.fileObj.id : props.row.directory.id)"><i class="iconfont icon-xiazai3" @click="downloadFile(props.row.id)"></i></a>
+                  <a :href="'http://172.30.10.78:8080/dc/file/downloadFile.act?fileId=' + (props.row.fileObj ? props.row.fileObj.id : props.row.directory.id)"><i class="iconfont icon-xiazai3" @click="downloadFile(props.row.id)"></i></a>
                   <i class="el-icon-more" @click="moreClick(props.row)"></i>
                   </span>
                   <span v-else>
-                  <!-- <a :href="'http://192.168.1.20:8081/support.platform/file/downloadFile.act?fileId=' + (props.row.fileObj ? props.row.fileObj.id : props.row.directory.id)"><i class="iconfont icon-xiazai3" @click="downloadFile(props.row.id)"></i></a> -->
+                  <!-- <a :href="'http://172.30.10.78:8080/dc/file/downloadFile.act?fileId=' + (props.row.fileObj ? props.row.fileObj.id : props.row.directory.id)"><i class="iconfont icon-xiazai3" @click="downloadFile(props.row.id)"></i></a> -->
                   <i class="el-icon-more" @click="moreClick(props.row)"></i>
                   </span>
                 </template>
               </el-table-column>
-
             <!-- <el-table-column label="操作">
               <template slot-scope="props">
-                <a :href="'http://192.168.1.20:8081/support.platform/file/downloadFile.act?fileId=' + props.row.id"><i class="iconfont icon-xiazai3" @click="downloadFile(props.row.id)"></i></a>
+                <a :href="'http://172.30.10.78:8080/dc/file/downloadFile.act?fileId=' + props.row.id"><i class="iconfont icon-xiazai3" @click="downloadFile(props.row.id)"></i></a>
                 <i class="el-icon-more" @click="moreClick(props.row)"></i>
               </template>
             </el-table-column> -->
@@ -122,10 +124,10 @@
         <div v-if="isMessage" @click="closeBox()" class="messageBox">
           <div id="messageBox">
             <ul>
-                <li><a href="javascript:;">新建文件夹</a></li>
+                <!-- <li><a href="javascript:;">新建文件夹</a></li> -->
                 <li><a href="javascript:;">移动</a></li>
                 <li><a href="javascript:;">复制</a></li>
-                <li><a href="javascript:;">下载</a></li>
+                <li v-if="tableItemInfo.type==1"><a :href="'http://172.30.10.78:8080/dc/file/downloadFile.act?fileId='+tableItemInfo.fileObj.id">下载</a></li>
                 <li><a href="javascript:;" @click="fnRename(tableItemInfo)">重命名</a></li>
                 <li><a href="javascript:;" @click="handleDel(tableItemInfo.id, tableItemInfo.type)">删除</a></li>
             </ul>
@@ -148,6 +150,8 @@ export default {
   },
   data() {
     return {
+      // 点击表格上传参数
+      loadId: '',
       // 侧边栏树形数据
       treeData: [],
       // 每一个tree节点对象
@@ -166,6 +170,8 @@ export default {
       tableItemInfo: {},
       // 右边文件表格数据
       tableData: [],
+      // 表格显示正在加载
+      loading: true,
       // 新建文件夹对话框
       dialogAddVisible: false,
       // 新建文件夹的输入框数据
@@ -198,6 +204,7 @@ export default {
     // 文件夹的点击事件
     onFolder(id) {
       this.showMsgFromChild(id);
+      this.loadId = id;
     },
      // 点击表格文档弹窗关闭
     closeBox() {
@@ -211,6 +218,7 @@ export default {
     // 点击目录在表格中显示文件
     // 子组件向父组件传参,左侧每一项点击事件传递过来的参数（被点击的节点对象）
     async showMsgFromChild(nodeObj) {
+      this.loading = true;
       // 上传文件的参数
       this.upLoadData.fdId = nodeObj.id;
       this.treeNodeObj = nodeObj;
@@ -221,9 +229,10 @@ export default {
         this.treeNodeId = nodeObj;
       }
       // console.log(this.treeNodeId);
-      const res = await this.$http.get(
-        "support.platform/catalog/getchildfiles.act?fdId=" + (nodeObj ? this.treeNodeId : '0')
+      const res = await this.$ajax.get(
+        "/api/catalog/getchildfiles.act?fdId=" + (nodeObj ? this.treeNodeId : '0')
       );
+      this.loading = false;
       const tableData = res.data.value;
       this.tableData = tableData;
       // console.log(this.tableData);
@@ -243,7 +252,7 @@ export default {
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
-          this.$http.get('/support.platform/rs/recoveryFd.act?fdFileId='+id+'&type='+type)
+          this.$ajax.get('/api/rs/recoveryFd.act?fdFileId='+id+'&type='+type)
           .then(() => {
             this.$message.success('删除成功')
             this.showMsgFromChild(_this.treeNodeId)
@@ -261,7 +270,6 @@ export default {
         // 重命名
     fnRename(obj){
       // 1是文件 2是文件夹
-      console.log(obj);
       this.$prompt('请输入新名称', '重命名', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
@@ -271,7 +279,7 @@ export default {
         // 1文件
         if(obj.type == 1){
           const id = obj.fileObj.id;
-          const fileRes = this.$http.get("/support.platform/file/renameFile.act?ID=" + id + "&FileName=" + valueObj.value)
+          const fileRes = this.$ajax.get("/api/file/renameFile.act?ID=" + id + "&FileName=" + valueObj.value)
           .then(() => {
             this.$message.success('重命名成功');
             this.showMsgFromChild(this.treeNodeId)
@@ -280,7 +288,7 @@ export default {
             this.$message.success('重命名失败');
           });
         }else{
-          const folderRes = this.$http.get("/support.platform/catalog/renamefd.act?fdId=" + obj.id + "&dirName=" + valueObj.value)
+          const folderRes = this.$ajax.get("/api/catalog/renamefd.act?fdId=" + obj.id + "&dirName=" + valueObj.value)
           .then(() => {
             this.$message.success('重命名成功');
             this.showMsgFromChild(this.treeNodeId)
@@ -298,6 +306,15 @@ export default {
       });
     },
 
+    // 点击表格中的某行上传文件
+    ontableupload(loadId) {
+      if(loadId) {
+        this.upLoadData.fdId = loadId;
+      } else {
+        this.upLoadData.fdId = '';
+      }
+    },
+
     // 上传文件
     // 上传成功
     uploadSuccess (response, file, fileList) {
@@ -308,17 +325,11 @@ export default {
     uploadError (response, file, fileList) {
       this.$message('上传失败');
     },
-    // 展示左边树目录
-    async loadData() {
-      const res = await this.$http.get('/support.platform/catalog/fdtree.act?fdId=0');
-      const data = res.data.value;
-      this.treeData = data;
-    },
 
     // Treeselect的展示 getfdtree
     async loadtreeData() {
-      const res = await this.$http.get('/support.platform/catalog/getfdtree.act?fdId=0');
-      console.log(res);
+      const res = await this.$ajax.get('/api/catalog/getfdtree.act?fdId=0');
+      // console.log(res);
       const data = res.data.value;
       this.options = data;
     },
@@ -326,20 +337,21 @@ export default {
     // 点击新建文件夹中的确定按钮
     handleAdd() {
       const data = {"dirName": this.formData.dirName,"pid": this.value};
-      // const res = await this.$ajax.post('/api/support.platform/catalog/addfd.act', data);
+      // const res = await this.$ajax.post('/api/dc/catalog/addfd.act', data);
       // console.log(res)
       const options = {
         method: 'POST',
         headers: { 'content-type': 'application/x-www-form-urlencoded' },
         data: qs.stringify(data),
-        url: '/support.platform/catalog/addfd.act'
+        url: '/api/catalog/addfd.act'
       };
-      this.$http(options)
+      this.$ajax(options)
       .then((res) => {
-        console.log(res);
+        // console.log(res);
         this.dialogAddVisible = false;
         this.showMsgFromChild(this.value);
         this.$refs.myAside.loadData();
+        this.formData.dirName = '';
       })
       .catch((error) => {
         this.$message.error(error);
@@ -402,6 +414,9 @@ export default {
   width: 200px;
   border-radius: 3px;
   box-shadow: 0 0 24px rgba(0,0,0,.18);
+}
+.header .vue-treeselect__menu-container {
+  width: 60%;
 }
 
 /* 主列表部分 */

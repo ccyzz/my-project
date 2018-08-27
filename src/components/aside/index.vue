@@ -5,7 +5,7 @@
         <!-- 侧边左部 -->
         <el-col :span="6" class="aside-left">
           <div class="top-area">
-            <a href="javascript:;">哈哈</a>
+            <a href="javascript:;">文档中心</a>
           </div>
           <div class="middle-area">
             <ul>
@@ -95,7 +95,6 @@ export default {
           recycleBox: 'recycleBox',
           // 侧边栏树形数据
           treeData: [],
-
           defaultProps: {
             children: 'directory',
             className: '',
@@ -109,7 +108,7 @@ export default {
     methods: {
       // 获取tree的数据
       async loadData() {
-        const res = await this.$http.get('/support.platform/catalog/fdtree.act?fdId=0');
+        const res = await this.$ajax.get('/api/catalog/fdtree.act?fdId=0');
         const data = res.data.value;
         this.treeData = data;
         // console.log(data)
@@ -123,15 +122,17 @@ export default {
             </span>
           );
       },
-      // 回收站样式
+      // 回收站
       goPage(data){
           this.isRecycle = true;
           this.$router.push({name: 'recycle'});
+          this.$emit('onRecycle');
       },
       // 获取每一个tree节点的id并传给父组件
       // $(item1, item2) 第一个参数是父组件中调用的监听器，第二个参数是传给父组件的参数
       handleNodeClick(nodeObj, node, nodeComponent) {
         this.$emit('listenToChildEvent', nodeObj);
+        this.$router.push({name: 'home'});
       }
     }
 }
@@ -394,7 +395,7 @@ export default {
 }
 /* tree滚动轴 */
 .treeSscrollbar{
-  height: 450px;
+  height: 400px;
   overflow: hidden;
 }
 .el-scrollbar__wrap{
